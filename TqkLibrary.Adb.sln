@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.31205.134
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TqkLibrary.Adb", "TqkLibrary.Adb\TqkLibrary.Adb.csproj", "{7920E534-F10F-4BD3-A867-9CF6A3EDF452}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{7920E534-F10F-4BD3-A867-9CF6A3EDF452}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7920E534-F10F-4BD3-A867-9CF6A3EDF452}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7920E534-F10F-4BD3-A867-9CF6A3EDF452}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7920E534-F10F-4BD3-A867-9CF6A3EDF452}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {7B54DE6A-928D-49E4-848A-0EC218F63A2E}
+	EndGlobalSection
+EndGlobal
