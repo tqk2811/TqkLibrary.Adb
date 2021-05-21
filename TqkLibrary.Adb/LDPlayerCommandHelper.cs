@@ -23,8 +23,7 @@ namespace TqkLibrary.Adb
       using CancellationTokenSource cancellationTokenSource = new CancellationTokenSource(timeout);
       Quit(cancellationTokenSource.Token);
     }
-    public static void Quit() => Quit(CancellationToken.None);
-    public static void Quit(CancellationToken cancellationToken) => ExecuteCommand("quit", cancellationToken);
+    public static void Quit(CancellationToken cancellationToken = default) => ExecuteCommand("quit", cancellationToken);
 
 
     public static void QuitAll(int timeout)
@@ -32,8 +31,7 @@ namespace TqkLibrary.Adb
       using CancellationTokenSource cancellationTokenSource = new CancellationTokenSource(timeout);
       QuitAll(cancellationTokenSource.Token);
     }
-    public static void QuitAll() => QuitAll(CancellationToken.None);
-    public static void QuitAll(CancellationToken cancellationToken) => ExecuteCommand("quitall", cancellationToken);
+    public static void QuitAll(CancellationToken cancellationToken = default) => ExecuteCommand("quitall", cancellationToken);
 
 
     public static void Launch(string name, int timeout)
@@ -41,8 +39,7 @@ namespace TqkLibrary.Adb
       using CancellationTokenSource cancellationTokenSource = new CancellationTokenSource(timeout);
       Launch(name, cancellationTokenSource.Token);
     }
-    public static void Launch(string name) => Launch(name, CancellationToken.None);
-    public static void Launch(string name, CancellationToken cancellationToken)
+    public static void Launch(string name, CancellationToken cancellationToken = default)
     {
       ExecuteCommand($"launch --name {name}", cancellationToken);
     }
@@ -53,8 +50,7 @@ namespace TqkLibrary.Adb
       using CancellationTokenSource cancellationTokenSource = new CancellationTokenSource(timeout);
       Reboot(name, cancellationTokenSource.Token);
     }
-    public static void Reboot(string name) => Reboot(name, CancellationToken.None);
-    public static void Reboot(string name, CancellationToken cancellationToken)
+    public static void Reboot(string name, CancellationToken cancellationToken = default)
     {
       ExecuteCommand($"reboot --name {name}", cancellationToken);
     }
@@ -65,8 +61,7 @@ namespace TqkLibrary.Adb
       using CancellationTokenSource cancellationTokenSource = new CancellationTokenSource(timeout);
       return List(cancellationTokenSource.Token);
     }
-    public static IEnumerable<string> List() => List(CancellationToken.None);
-    public static IEnumerable<string> List(CancellationToken cancellationToken)
+    public static IEnumerable<string> List(CancellationToken cancellationToken = default)
     {
       string result = ExecuteCommand("list", cancellationToken);
       return result.Split('\n').Select(x => x.Trim()).Where(x => !string.IsNullOrWhiteSpace(x));
@@ -78,8 +73,7 @@ namespace TqkLibrary.Adb
       using CancellationTokenSource cancellationTokenSource = new CancellationTokenSource(timeout);
       return RunningList(cancellationTokenSource.Token);
     }
-    public static IEnumerable<string> RunningList() => RunningList(CancellationToken.None);
-    public static IEnumerable<string> RunningList(CancellationToken cancellationToken)
+    public static IEnumerable<string> RunningList(CancellationToken cancellationToken = default)
     {
       string result = ExecuteCommand("runninglist", cancellationToken);
       return result.Split('\n').Select(x => x.Trim()).Where(x => !string.IsNullOrWhiteSpace(x));
@@ -91,8 +85,7 @@ namespace TqkLibrary.Adb
       using CancellationTokenSource cancellationTokenSource = new CancellationTokenSource(timeout);
       return IsRunning(name, cancellationTokenSource.Token);
     }
-    public static bool IsRunning(string name) => IsRunning(name, CancellationToken.None);
-    public static bool IsRunning(string name, CancellationToken cancellationToken)
+    public static bool IsRunning(string name, CancellationToken cancellationToken = default)
     {
       string result = ExecuteCommand($"isrunning --name {name}", cancellationToken);
       return result.Contains("running");
@@ -104,8 +97,7 @@ namespace TqkLibrary.Adb
       using CancellationTokenSource cancellationTokenSource = new CancellationTokenSource(timeout);
       return List2(cancellationTokenSource.Token);
     }
-    public static IEnumerable<string> List2() => List2(CancellationToken.None);
-    public static IEnumerable<string> List2(CancellationToken cancellationToken)
+    public static IEnumerable<string> List2(CancellationToken cancellationToken = default)
     {
       string result = ExecuteCommand("list2", cancellationToken);
       return result.Split('\n').Select(x => x.Trim()).Where(x => !string.IsNullOrWhiteSpace(x));
@@ -120,8 +112,7 @@ namespace TqkLibrary.Adb
       using CancellationTokenSource cancellationTokenSource = new CancellationTokenSource(timeout);
       Copy(from, name, cancellationTokenSource.Token);
     }
-    public static void Copy(string from, string name) => Copy(from, name, CancellationToken.None);
-    public static void Copy(string from,string name, CancellationToken cancellationToken)
+    public static void Copy(string from,string name, CancellationToken cancellationToken = default)
     {
       ExecuteCommand($"copy --name {name} --from {from}", cancellationToken);
     }
@@ -132,8 +123,7 @@ namespace TqkLibrary.Adb
       using CancellationTokenSource cancellationTokenSource = new CancellationTokenSource(timeout);
       Remove(name, cancellationTokenSource.Token);
     }
-    public static void Remove(string name) => Remove(name, CancellationToken.None);
-    public static void Remove(string name, CancellationToken cancellationToken)
+    public static void Remove(string name, CancellationToken cancellationToken = default)
     {
       ExecuteCommand($"remove --name {name}", cancellationToken);
     }
@@ -179,7 +169,7 @@ namespace TqkLibrary.Adb
       string err = process.StandardError.ReadToEnd();
       if (!string.IsNullOrEmpty(err))
       {
-        throw new AdbException(err, result);
+        throw new AdbException(result, err, command);
       }
       return result;
     }
