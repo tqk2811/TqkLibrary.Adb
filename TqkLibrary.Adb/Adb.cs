@@ -114,7 +114,7 @@ namespace TqkLibrary.Adb
       string err = process.StandardError.ReadToEnd();
       if (!string.IsNullOrEmpty(err))
       {
-        if (!err.Trim().StartsWith("Warning:")) throw new AdbException(err, result);
+        if (!err.Trim().StartsWith("Warning:")) throw new AdbException(result, err, command);
         else
         {
           Console.WriteLine($"AdbCommand:" + command);
@@ -154,7 +154,7 @@ namespace TqkLibrary.Adb
       string err = process.StandardError.ReadToEnd();
       if (!string.IsNullOrEmpty(err))
       {
-        if (!err.Trim().StartsWith("Warning:")) throw new AdbException(err, result);
+        if (!err.Trim().StartsWith("Warning:")) throw new AdbException(result, err, command);
         else
         {
           Console.WriteLine($"AdbCommand:" + command);
@@ -342,7 +342,7 @@ namespace TqkLibrary.Adb
           point = new Point(x, y);
           return point.Value;
         }
-        throw new AdbException(result, null);
+        throw new AdbException(result, "shell dumpsys display failed", "shell dumpsys display | Find \"mCurrentDisplayRect\"");
       }
       else return point.Value;
     }
