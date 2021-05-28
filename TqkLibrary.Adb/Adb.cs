@@ -169,7 +169,9 @@ namespace TqkLibrary.Adb
     #region mainMethod
     public void Stop() => TokenSource.Cancel();
 
-    public void Delay(int min, int max) => Task.Delay(rd.Next(min, max), CancellationToken).Wait();
+    public void Delay(int value) => Task.Delay(value, CancellationToken).Wait();
+
+    public void Delay(int min, int max) => Delay(rd.Next(min, max));
 
     public void Dispose() => TokenSource.Dispose();
 
@@ -346,6 +348,15 @@ namespace TqkLibrary.Adb
       }
       else return point.Value;
     }
+
+    public IEnumerable<string> ListActivities(string packageName)
+    {
+      string result = AdbCommandCmd($"adb shell dumpsys package | Find \"{packageName}/\" | Find \"Activity\"");//
+      var lines = result.Split('\r');
+      return lines.Select(x => x.Trim());
+    }
+
+
 
     public void Tap(int x, int y, int count = 1)
     {
