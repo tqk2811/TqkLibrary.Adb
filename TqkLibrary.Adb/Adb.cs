@@ -86,7 +86,7 @@ namespace TqkLibrary.Adb
       return ListDevices;
     }
 
-    public static IEnumerable<string> GetDevicesOnline() => GetDevices().Where(x => !x.EndsWith("\toffline"));
+    public static IEnumerable<string> GetDevicesOnline() => GetDevices().Where(x => !x.EndsWith("\toffline") && !x.EndsWith("\trecovery"));
 
     public static string ExecuteCommand(string command, int timeout = 30000, string adbPath = null)
     {
