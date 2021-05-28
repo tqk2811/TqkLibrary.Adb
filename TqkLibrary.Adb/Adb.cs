@@ -169,7 +169,11 @@ namespace TqkLibrary.Adb
     #region mainMethod
     public void Stop() => TokenSource.Cancel();
 
-    public void Delay(int value) => Task.Delay(value, CancellationToken).Wait();
+    public void Delay(int value)
+    {
+      LogCommand?.Invoke($"Delay {value}ms");
+      Task.Delay(value, CancellationToken).Wait();
+    }
 
     public void Delay(int min, int max) => Delay(rd.Next(min, max));
 
