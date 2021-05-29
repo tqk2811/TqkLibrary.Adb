@@ -238,7 +238,7 @@ namespace TqkLibrary.Adb
 
     public void UnRoot() => AdbCommand("unroot");
 
-    public void WaitForDevice(int timeout = 120000) => AdbCommand("wait-for-device", timeout);
+    public void WaitFor(WaitForType type, int timeout = 120000) => AdbCommand($"wait-for-{type.ToString().ToLower()}", timeout);
 
     public void Shutdown() => AdbCommand("shell reboot -p");
 
