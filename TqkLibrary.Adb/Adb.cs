@@ -26,9 +26,7 @@ namespace TqkLibrary.Adb
       }
     }
 
-    private const string tap = "shell input tap {0} {1}";
-    private const string swipe = "shell input swipe {0} {1} {2} {3} {4}";
-
+    public bool LogDelay { get; set; } = false;
     public int TimeoutDefault { get; set; } = 30000;
     private readonly string adbPath;
     private readonly Random rd = new Random();
@@ -111,14 +109,15 @@ namespace TqkLibrary.Adb
       cancellationToken.ThrowIfCancellationRequested();
 
       string result = process.StandardOutput.ReadToEnd();
-      string err = process.StandardError.ReadToEnd();
+      string err = process.StandardError.ReadToEnd().Trim();
       if (!string.IsNullOrEmpty(err))
       {
-        if (!err.Trim().StartsWith("Warning:")) throw new AdbException(result, err, command);
+        if (err.StartsWith("Error:") || err.StartsWith("Fatal:") || err.StartsWith("Silent:")) throw new AdbException(result, err, command);
         else
         {
-          Console.WriteLine($"AdbCommand:" + command);
-          Console.WriteLine($"\t" + err);
+          Console.WriteLine($"AdbCommand:\t" + command);
+          Console.WriteLine($"StandardOutput:\t" + result);
+          Console.WriteLine($"StandardError:\t" + err);
         }
       }
       return result;
@@ -145,20 +144,18 @@ namespace TqkLibrary.Adb
       process.StandardInput.WriteLine($"\"{(string.IsNullOrEmpty(adbPath) ? AdbPath : adbPath)}\" {command}");
       process.StandardInput.Flush();
       process.StandardInput.Close();
-
-
       using (cancellationToken.Register(() => process.Kill())) process.WaitForExit();
 
-
       string result = process.StandardOutput.ReadToEnd();
-      string err = process.StandardError.ReadToEnd();
+      string err = process.StandardError.ReadToEnd().Trim();
       if (!string.IsNullOrEmpty(err))
       {
-        if (!err.Trim().StartsWith("Warning:")) throw new AdbException(result, err, command);
+        if (err.StartsWith("Error:") || err.StartsWith("Fatal:") || err.StartsWith("Silent:")) throw new AdbException(result, err, command);
         else
         {
-          Console.WriteLine($"AdbCommand:" + command);
-          Console.WriteLine($"\t" + err);
+          Console.WriteLine($"AdbCommand:\t" + command);
+          Console.WriteLine($"StandardOutput:\t" + result);
+          Console.WriteLine($"StandardError:\t" + err);
         }
       }
       return result;
@@ -171,7 +168,7 @@ namespace TqkLibrary.Adb
 
     public void Delay(int value)
     {
-      LogCommand?.Invoke($"Delay {value}ms");
+      if(LogDelay) LogCommand?.Invoke($"Delay {value}ms");
       Task.Delay(value, CancellationToken).Wait();
     }
 
@@ -329,9 +326,9 @@ namespace TqkLibrary.Adb
     }
 
     Point? point = null;
-    public Point GetScreenResolution()
+    public Point GetScreenResolution(bool force = false)
     {
-      if (point == null)
+      if (point == null || force)
       {
         Regex regex = new Regex("(?<=mCurrentDisplayRect=Rect\\().*?(?=\\))", RegexOptions.Multiline);
         string result = AdbCommandCmd("shell dumpsys display | Find \"mCurrentDisplayRect\"");//
@@ -355,7 +352,7 @@ namespace TqkLibrary.Adb
 
     public IEnumerable<string> ListActivities(string packageName)
     {
-      string result = AdbCommandCmd($"adb shell dumpsys package | Find \"{packageName}/\" | Find \"Activity\"");//
+      string result = AdbCommandCmd($"shell dumpsys package | Find \"{packageName}/\" | Find \"Activity\"");//shell dumpsys package | Find "com.km.karaoke/" | Find "Activity"
       var lines = result.Split('\r');
       return lines.Select(x => x.Trim());
     }
@@ -364,7 +361,7 @@ namespace TqkLibrary.Adb
 
     public void Tap(int x, int y, int count = 1)
     {
-      for (int i = 0; i < count; i++) AdbCommand(string.Format(tap, x, y));
+      for (int i = 0; i < count; i++) AdbCommand($"shell input tap {x} {y}");
     }
 
     public void TapByPercent(double x, double y, int count = 1)
@@ -375,7 +372,7 @@ namespace TqkLibrary.Adb
       Tap(X, Y, count);
     }
 
-    public void Swipe(int x1, int y1, int x2, int y2, int duration = 100) => AdbCommand(string.Format(swipe, x1, y1, x2, y2, duration));
+    public void Swipe(int x1, int y1, int x2, int y2, int duration = 100) => AdbCommand($"shell input swipe {x1} {y1} {x2} {y2} {duration}");
 
     public void SwipeByPercent(double x1, double y1, double x2, double y2, int duration = 100)
     {
@@ -389,14 +386,28 @@ namespace TqkLibrary.Adb
       Swipe(X1, Y1, X2, Y2, duration);
     }
 
-    public void LongPress(int x, int y, int duration = 100) => AdbCommand(string.Format(swipe, x, y, x, y, duration));
+    public void LongPress(int x, int y, int duration = 100) => AdbCommand($"shell input swipe {x} {y} {x} {y} {duration}");
 
-    public void Key(ADBKeyEvent key) => AdbCommand(string.Format("shell input keyevent {0}", key));
+    public void Key(ADBKeyEvent key) => AdbCommand($"shell input keyevent {(int)key}");
 
-    public void Key(int keyCode) => AdbCommand(string.Format("shell input keyevent {0}", keyCode));
+    public void Key(int keyCode) => AdbCommand($"shell input keyevent {keyCode}");
 
-    public void InputText(string text) => AdbCommand(string.Format("shell input text \"{0}\"",
-        text.Replace(" ", "%s").Replace("&", "\\&").Replace("<", "\\<").Replace(">", "\\>").Replace("?", "\\?").Replace(":", "\\:").Replace("{", "\\{").Replace("}", "\\}").Replace("[", "\\[").Replace("]", "\\]").Replace("|", "\\|")));
+    public void InputText(string text)
+    {
+      string text_fix = text
+        .Replace(" ", "%s")
+        .Replace("&", "\\&")
+        .Replace("<", "\\<")
+        .Replace(">", "\\>")
+        .Replace("?", "\\?")
+        .Replace(":", "\\:")
+        .Replace("{", "\\{")
+        .Replace("}", "\\}")
+        .Replace("[", "\\[")
+        .Replace("]", "\\]")
+        .Replace("|", "\\|");
+      AdbCommand($"shell input text \"{text_fix}\"");
+    }
 
     public void PlanModeON()
     {
