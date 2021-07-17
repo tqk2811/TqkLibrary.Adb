@@ -64,9 +64,8 @@ namespace TqkLibrary.Adb
 
     public static List<string> Devices(DeviceState state = DeviceState.All)
     {
-      List<string> ListDevices = new List<string>();
-      string input = ExecuteCommandCmd("devices");
-      var lines = Regex.Split(input, "\r\n").Skip(1).Select(x => x.Trim()).ToList();
+      string input = ExecuteCommand("devices");
+      var lines = Regex.Split(input, "\r\n").Skip(1).Select(x => x.Trim()).Where(x => !string.IsNullOrWhiteSpace(x)).ToList();
       if(state != DeviceState.All)
       {
         var states = state.ToString().ToLower().Split(',').Select(x => x.Trim()).ToList();
