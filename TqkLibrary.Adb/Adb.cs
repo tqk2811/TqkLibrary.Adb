@@ -10,6 +10,7 @@ using System.Threading.Tasks;
 
 namespace TqkLibrary.Adb
 {
+
   public delegate void AdbLog(string log);
 
   public class Adb : IDisposable
@@ -61,30 +62,18 @@ namespace TqkLibrary.Adb
 
     public static void StartServer(int timeout = 30000) => ExecuteCommand("adb start-server", timeout);
 
-    public static List<string> GetDevices()
+    public static List<string> Devices(DeviceState state = DeviceState.All)
     {
       List<string> ListDevices = new List<string>();
       string input = ExecuteCommandCmd("devices");
-      string pattern = @"(?<=List of devices attached)([^\n]*\n+)+";
-      MatchCollection matchCollection = Regex.Matches(input, pattern, RegexOptions.Singleline);
-      if (matchCollection.Count > 0)
+      var lines = Regex.Split(input, "\r\n").Skip(1).Select(x => x.Trim()).ToList();
+      if(state != DeviceState.All)
       {
-        string AllDevices = matchCollection[0].Groups[0].Value;
-        string[] lines = Regex.Split(AllDevices, "\r\n");
-
-        foreach (var device in lines)
-        {
-          if (!string.IsNullOrEmpty(device) && device != " ")
-          {
-            string devices = device.Trim().Replace("device", "");
-            ListDevices.Add(devices.Trim());
-          }
-        }
+        var states = state.ToString().ToLower().Split(',').Select(x => x.Trim()).ToList();
+        return lines.Where(x => states.Any(y => x.EndsWith(y))).Select(x => x.Split('\t').First().Trim()).ToList();
       }
-      return ListDevices;
+      else return lines;
     }
-
-    public static IEnumerable<string> GetDevicesOnline() => GetDevices().Where(x => !x.EndsWith("\toffline") && !x.EndsWith("\trecovery"));
 
     public static string ExecuteCommand(string command, int timeout = 30000, string adbPath = null)
     {
