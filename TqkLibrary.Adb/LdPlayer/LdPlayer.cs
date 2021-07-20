@@ -101,8 +101,6 @@ namespace TqkLibrary.Adb.LdPlayer
 
     public static void Copy(string from,string newName, CancellationToken cancellationToken = default) => ExecuteCommand($"copy --name {newName} --from {from}", cancellationToken);
 
-    public static void Rename(string name,string newName, CancellationToken cancellationToken = default) => ExecuteCommand($"rename --name {name} --title {newName}", cancellationToken);
-
     public static void SortWnd(CancellationToken cancellationToken = default) => ExecuteCommand($"sortWnd", cancellationToken);
     #endregion
 
@@ -124,11 +122,16 @@ namespace TqkLibrary.Adb.LdPlayer
     }
 
 
-    public void Quit() => ExecuteCommand($"quit --name {Adb.DeviceId}", Adb.CancellationToken);
-    public void Launch() => ExecuteCommand($"launch --name {Adb.DeviceId}", Adb.CancellationToken);
-    public void Reboot() => ExecuteCommand($"reboot --name {Adb.DeviceId}", Adb.CancellationToken);
-    public bool IsRunning() => ExecuteCommand($"isrunning --name {Adb.DeviceId}", Adb.CancellationToken).Contains("running");
-    public void Remove() => ExecuteCommand($"remove --name {Adb.DeviceId}", Adb.CancellationToken);
-    public void Locatte(double lng,double lat) => ExecuteCommand($"remove --name {Adb.DeviceId} --LLI {lng},{lat}", Adb.CancellationToken);
+    public void Quit() => ExecuteCommand($"quit --name \"{Adb.DeviceId}\"", Adb.CancellationToken);
+    public void Launch() => ExecuteCommand($"launch --name \"{Adb.DeviceId}\"", Adb.CancellationToken);
+    public void Reboot() => ExecuteCommand($"reboot --name \"{Adb.DeviceId}\"", Adb.CancellationToken);
+    public bool IsRunning() => ExecuteCommand($"isrunning --name \"{Adb.DeviceId}\"", Adb.CancellationToken).Contains("running");
+    public void Remove() => ExecuteCommand($"remove --name \"{Adb.DeviceId}\"", Adb.CancellationToken);
+    public void Rename(string newName)
+    {
+      ExecuteCommand($"rename --name \"{Adb.DeviceId}\" --title \"{newName}\"", Adb.CancellationToken);
+      Adb.DeviceId = newName;
+    }
+    public void Locatte(double lng,double lat) => ExecuteCommand($"remove --name \"{Adb.DeviceId}\" --LLI {lng},{lat}", Adb.CancellationToken);
   }
 }

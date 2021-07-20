@@ -35,7 +35,7 @@ namespace TqkLibrary.Adb
 
     public CancellationToken CancellationToken { get { return TokenSource.Token; } }
 
-    public readonly string DeviceId;
+    public string DeviceId { get; internal set; }
 
     public event AdbLog LogCommand;
 
