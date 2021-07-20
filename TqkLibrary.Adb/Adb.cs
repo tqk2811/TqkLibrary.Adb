@@ -62,14 +62,14 @@ namespace TqkLibrary.Adb
 
     public static void StartServer(int timeout = 30000) => ExecuteCommand("adb start-server", timeout);
 
-    public static List<string> Devices(DeviceState state = DeviceState.All)
+    public static IEnumerable<string> Devices(DeviceState state = DeviceState.All)
     {
       string input = ExecuteCommand("devices");
-      var lines = Regex.Split(input, "\r\n").Skip(1).Select(x => x.Trim()).Where(x => !string.IsNullOrWhiteSpace(x)).ToList();
+      var lines = Regex.Split(input, "\r\n").Skip(1).Select(x => x.Trim()).Where(x => !string.IsNullOrWhiteSpace(x));
       if(state != DeviceState.All)
       {
         var states = state.ToString().ToLower().Split(',').Select(x => x.Trim()).ToList();
-        return lines.Where(x => states.Any(y => x.EndsWith(y))).Select(x => x.Split('\t').First().Trim()).ToList();
+        return lines.Where(x => states.Any(y => x.EndsWith(y))).Select(x => x.Split('\t').First().Trim());
       }
       else return lines;
     }
@@ -100,13 +100,14 @@ namespace TqkLibrary.Adb
       string err = process.StandardError.ReadToEnd().Trim();
       if (!string.IsNullOrEmpty(err))
       {
-        if (err.StartsWith("Error:") || err.StartsWith("Fatal:") || err.StartsWith("Silent:")) throw new AdbException(result, err, command);
-        else
-        {
-          Console.WriteLine($"AdbCommand:\t" + command);
-          Console.WriteLine($"StandardOutput:\t" + result);
-          Console.WriteLine($"StandardError:\t" + err);
-        }
+        Console.WriteLine($"AdbCommand:" + command);
+        Console.WriteLine($"\t\tStandardOutput:" + result);
+        Console.WriteLine($"\t\tStandardError:" + err);
+        //if (err.StartsWith("Error:") || err.StartsWith("Fatal:") || err.StartsWith("Silent:")) throw new AdbException(result, err, command);
+        //else
+        //{
+
+        //}
       }
       return result;
     }
@@ -138,13 +139,16 @@ namespace TqkLibrary.Adb
       string err = process.StandardError.ReadToEnd().Trim();
       if (!string.IsNullOrEmpty(err))
       {
-        if (err.StartsWith("Error:") || err.StartsWith("Fatal:") || err.StartsWith("Silent:")) throw new AdbException(result, err, command);
-        else
-        {
-          Console.WriteLine($"AdbCommand:\t" + command);
-          Console.WriteLine($"StandardOutput:\t" + result);
-          Console.WriteLine($"StandardError:\t" + err);
-        }
+        Console.WriteLine($"AdbCommand (cmd):" + command);
+        Console.WriteLine($"\t\tStandardOutput:" + result);
+        Console.WriteLine($"\t\tStandardError:" + err);
+        //if (err.StartsWith("Error:") || err.StartsWith("Fatal:") || err.StartsWith("Silent:")) throw new AdbException(result, err, command);
+        //else
+        //{
+        //  Console.WriteLine($"AdbCommand:\t" + command);
+        //  Console.WriteLine($"StandardOutput:\t" + result);
+        //  Console.WriteLine($"StandardError:\t" + err);
+        //}
       }
       return result;
     }
@@ -176,7 +180,7 @@ namespace TqkLibrary.Adb
         using CancellationTokenSource cancellationTokenSource = new CancellationTokenSource(timeout);
         using (CancellationToken.Register(() => cancellationTokenSource.Cancel()))
         {
-          return LDPlayerCommandHelper.Adb(DeviceId, command, cancellationTokenSource.Token);
+          return LdPlayer.LdPlayer.AdbCommand(DeviceId, command, cancellationTokenSource.Token);
         }
       }
       else
