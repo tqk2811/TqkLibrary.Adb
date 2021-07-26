@@ -26,7 +26,7 @@ namespace TqkLibrary.Adb.LdPlayer
     #region Static func
     internal static string AdbCommand(string name, string command, CancellationToken cancellationToken)
     {
-      return ExecuteCommand($"adb --name {name} --command {command}", cancellationToken);
+      return ExecuteCommand($"adb --name {name} --command \"{command.Replace("\"","\\\"")}\"", cancellationToken);
     }
 
     static string ExecuteCommand(string command, CancellationToken cancellationToken, string ldConsolePath = null)
@@ -132,6 +132,16 @@ namespace TqkLibrary.Adb.LdPlayer
       ExecuteCommand($"rename --name \"{Adb.DeviceId}\" --title \"{newName}\"", Adb.CancellationToken);
       Adb.DeviceId = newName;
     }
-    public void Locatte(double lng,double lat) => ExecuteCommand($"remove --name \"{Adb.DeviceId}\" --LLI {lng},{lat}", Adb.CancellationToken);
+
+    public void InstallAppFile(string fileName) => ExecuteCommand($"installapp --name \"{Adb.DeviceId}\" --filename {fileName}", Adb.CancellationToken);
+    public void InstallAppPackage(string pakageName) => ExecuteCommand($"installapp --name \"{Adb.DeviceId}\" --packagename {pakageName}", Adb.CancellationToken);
+    public void UninstallApp(string pakageName) => ExecuteCommand($"uninstallapp --name \"{Adb.DeviceId}\" --packagename {pakageName}", Adb.CancellationToken);
+    public void RunApp(string pakageName) => ExecuteCommand($"runapp --name \"{Adb.DeviceId}\" --packagename {pakageName}", Adb.CancellationToken);
+    public void KillApp(string pakageName) => ExecuteCommand($"killapp --name \"{Adb.DeviceId}\" --packagename {pakageName}", Adb.CancellationToken);
+    public void Locatte(double lng, double lat) => ExecuteCommand($"remove --name \"{Adb.DeviceId}\" --LLI {lng},{lat}", Adb.CancellationToken);
+
+    public void BackupApp(string pakageName, string pcPath) => ExecuteCommand($"backupapp --name \"{Adb.DeviceId}\" --packagename {pakageName} --file {pcPath}", Adb.CancellationToken);
+    public void RestoreApp(string pakageName, string pcPath) => ExecuteCommand($"restoreapp --name \"{Adb.DeviceId}\" --packagename {pakageName} --file {pcPath}", Adb.CancellationToken);
+
   }
 }

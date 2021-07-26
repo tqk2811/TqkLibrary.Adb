@@ -294,7 +294,7 @@ namespace TqkLibrary.Adb
       bool IsDelete = false;
       if (string.IsNullOrEmpty(FilePath))
       {
-        FilePath = (string.IsNullOrEmpty(DeviceId) ? Guid.NewGuid().ToString() : DeviceId.Replace(":", "_")) + ".png";
+        FilePath = Directory.GetCurrentDirectory() + "\\" + Guid.NewGuid().ToString() + ".png";
         IsDelete = true;
       }
       string androidPath = $"/sdcard/{Guid.NewGuid()}.png";
@@ -350,7 +350,7 @@ namespace TqkLibrary.Adb
     }
 
 
-
+    public void Tap(Point point, int count = 1) => Tap(point.X, point.Y, count);
     public void Tap(int x, int y, int count = 1)
     {
       for (int i = 0; i < count; i++) AdbCommand($"shell input tap {x} {y}");
@@ -364,6 +364,7 @@ namespace TqkLibrary.Adb
       Tap(X, Y, count);
     }
 
+    public void Swipe(Point from, Point to, int duration = 100) => Swipe(from.X, from.Y, to.X, to.Y, duration);
     public void Swipe(int x1, int y1, int x2, int y2, int duration = 100) => AdbCommand($"shell input swipe {x1} {y1} {x2} {y2} {duration}");
 
     public void SwipeByPercent(double x1, double y1, double x2, double y2, int duration = 100)
@@ -378,6 +379,7 @@ namespace TqkLibrary.Adb
       Swipe(X1, Y1, X2, Y2, duration);
     }
 
+    public void LongPress(Point point, int duration = 100) => LongPress(point.X, point.Y, duration);
     public void LongPress(int x, int y, int duration = 100) => AdbCommand($"shell input swipe {x} {y} {x} {y} {duration}");
 
     public void Key(ADBKeyEvent key) => AdbCommand($"shell input keyevent {(int)key}");
