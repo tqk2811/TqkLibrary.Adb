@@ -74,13 +74,13 @@ namespace TqkLibrary.Adb
       else return lines;
     }
 
-    public static string ExecuteCommand(string command, int timeout = 30000, string adbPath = null)
+    public static string ExecuteCommand(string command, int timeout = 30000, CancellationToken cancelToken = default, string adbPath = null)
     {
       using CancellationTokenSource cancellationTokenSource = new CancellationTokenSource(timeout);
-      return ExecuteCommand(command, cancellationTokenSource.Token, adbPath);
+      return ExecuteCommand(command, cancellationTokenSource.Token, cancelToken, adbPath);
     }
 
-    public static string ExecuteCommand(string command, CancellationToken cancellationToken, string adbPath = null)
+    public static string ExecuteCommand(string command, CancellationToken timeoutToken, CancellationToken cancelToken, string adbPath = null)
     {
       using Process process = new Process();
       process.StartInfo.FileName = string.IsNullOrEmpty(adbPath) ? AdbPath : adbPath;
@@ -93,32 +93,31 @@ namespace TqkLibrary.Adb
       process.StartInfo.RedirectStandardInput = true;
       process.Start();
 
-      using (cancellationToken.Register(() => process.Kill())) process.WaitForExit();
-      cancellationToken.ThrowIfCancellationRequested();
+      using (cancelToken.Register(() => process.Kill()))
+        using (timeoutToken.Register(() => process.Kill())) 
+          process.WaitForExit();
+      cancelToken.ThrowIfCancellationRequested();
+      if (timeoutToken.IsCancellationRequested) throw new AdbTimeoutException(command);
 
       string result = process.StandardOutput.ReadToEnd();
       string err = process.StandardError.ReadToEnd().Trim();
-      if (!string.IsNullOrEmpty(err))
+      if(process.ExitCode != 0) throw new AdbException(result, err, command);
+      else if (!string.IsNullOrEmpty(err))
       {
         Console.WriteLine($"AdbCommand:" + command);
         Console.WriteLine($"\t\tStandardOutput:" + result);
         Console.WriteLine($"\t\tStandardError:" + err);
-        //if (err.StartsWith("Error:") || err.StartsWith("Fatal:") || err.StartsWith("Silent:")) throw new AdbException(result, err, command);
-        //else
-        //{
-
-        //}
       }
       return result;
     }
 
-    public static string ExecuteCommandCmd(string command, int timeout = 30000, string adbPath = null)
+    public static string ExecuteCommandCmd(string command, int timeout = 30000, CancellationToken cancelToken = default, string adbPath = null)
     {
       using CancellationTokenSource cancellationTokenSource = new CancellationTokenSource(timeout);
-      return ExecuteCommandCmd(command, cancellationTokenSource.Token, adbPath);
+      return ExecuteCommandCmd(command, cancellationTokenSource.Token, cancelToken, adbPath);
     }
 
-    public static string ExecuteCommandCmd(string command, CancellationToken cancellationToken, string adbPath = null)
+    public static string ExecuteCommandCmd(string command, CancellationToken timeoutToken, CancellationToken cancelToken, string adbPath = null)
     {
       using Process process = new Process();
       process.StartInfo.FileName = "cmd.exe";
@@ -133,22 +132,21 @@ namespace TqkLibrary.Adb
       process.StandardInput.WriteLine($"\"{(string.IsNullOrEmpty(adbPath) ? AdbPath : adbPath)}\" {command}");
       process.StandardInput.Flush();
       process.StandardInput.Close();
-      using (cancellationToken.Register(() => process.Kill())) process.WaitForExit();
+
+      using (cancelToken.Register(() => process.Kill()))
+        using (timeoutToken.Register(() => process.Kill())) 
+          process.WaitForExit();
+      cancelToken.ThrowIfCancellationRequested();
+      if (timeoutToken.IsCancellationRequested) throw new AdbTimeoutException(command);
 
       string result = process.StandardOutput.ReadToEnd();
       string err = process.StandardError.ReadToEnd().Trim();
-      if (!string.IsNullOrEmpty(err))
+      if (process.ExitCode != 0) throw new AdbException(result, err, command);
+      else if (!string.IsNullOrEmpty(err))
       {
         Console.WriteLine($"AdbCommand (cmd):" + command);
         Console.WriteLine($"\t\tStandardOutput:" + result);
         Console.WriteLine($"\t\tStandardError:" + err);
-        //if (err.StartsWith("Error:") || err.StartsWith("Fatal:") || err.StartsWith("Silent:")) throw new AdbException(result, err, command);
-        //else
-        //{
-        //  Console.WriteLine($"AdbCommand:\t" + command);
-        //  Console.WriteLine($"StandardOutput:\t" + result);
-        //  Console.WriteLine($"StandardError:\t" + err);
-        //}
       }
       return result;
     }
@@ -178,10 +176,7 @@ namespace TqkLibrary.Adb
       if(IsLd)
       {
         using CancellationTokenSource cancellationTokenSource = new CancellationTokenSource(timeout);
-        using (CancellationToken.Register(() => cancellationTokenSource.Cancel()))
-        {
-          return LdPlayer.LdPlayer.AdbCommand(DeviceId, command, cancellationTokenSource.Token);
-        }
+        return LdPlayer.LdPlayer.AdbCommand(DeviceId, command, cancellationTokenSource.Token, this.CancellationToken);
       }
       else
       {
@@ -189,10 +184,7 @@ namespace TqkLibrary.Adb
         LogCommand?.Invoke("adb " + command);
         string commands = string.IsNullOrEmpty(DeviceId) ? command : $"-s {DeviceId} {command}";
         using CancellationTokenSource cancellationTokenSource = new CancellationTokenSource(timeout);
-        using (CancellationToken.Register(() => cancellationTokenSource.Cancel()))
-        {
-          return ExecuteCommand(commands, cancellationTokenSource.Token, adbLocation);
-        }
+        return ExecuteCommand(commands, cancellationTokenSource.Token, this.CancellationToken, adbLocation);
       }
     }
 
@@ -213,10 +205,7 @@ namespace TqkLibrary.Adb
         string commands = string.IsNullOrEmpty(DeviceId) ? command : $"-s {DeviceId} {command}";
         LogCommand?.Invoke(commands);
         using CancellationTokenSource cancellationTokenSource = new CancellationTokenSource(timeout);
-        using (CancellationToken.Register(() => cancellationTokenSource.Cancel()))
-        {
-          return ExecuteCommandCmd(commands, cancellationTokenSource.Token, adbLocation);
-        }
+        return ExecuteCommandCmd(commands, cancellationTokenSource.Token, this.CancellationToken, adbLocation);
       }
     }
 
