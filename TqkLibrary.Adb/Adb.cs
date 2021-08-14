@@ -8,10 +8,10 @@ using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace TqkLibrary.Adb
+namespace TqkLibrary.AdbDotNet
 {
 
-  public delegate void AdbLog(string log);
+  public delegate void LogCallback(string log);
 
   public class Adb : IDisposable
   {
@@ -31,21 +31,21 @@ namespace TqkLibrary.Adb
     public int TimeoutDefault { get; set; } = 30000;
     private readonly string adbPath;
     private readonly Random rd = new Random();
-    protected CancellationTokenSource TokenSource;
-
+    protected CancellationTokenSource TokenSource = new CancellationTokenSource();
+    protected CancellationTokenSource TokenSource2 = new CancellationTokenSource();//continue work cleanup after TokenSource stop
     public CancellationToken CancellationToken { get { return TokenSource.Token; } }
 
+    internal CancellationToken Token { get { return TokenSource.IsCancellationRequested ? TokenSource2.Token : TokenSource.Token; } }
     public string DeviceId { get; internal set; }
 
-    public event AdbLog LogCommand;
+    public event LogCallback LogCommand;
 
 
     public bool IsLd { get; private set; } = false;
     internal Adb(string ldName)
     {
       IsLd = true;
-      DeviceId = ldName; 
-      TokenSource = new CancellationTokenSource();
+      DeviceId = ldName;
     }
 
     public Adb(string deviceId = null, string adbPath = null)
@@ -53,7 +53,6 @@ namespace TqkLibrary.Adb
       this.DeviceId = deviceId;
       this.adbPath = adbPath;
       if (File.Exists(adbPath)) _AdbPath = adbPath;
-      TokenSource = new CancellationTokenSource();
     }
 
     #region Static
@@ -101,7 +100,7 @@ namespace TqkLibrary.Adb
 
       string result = process.StandardOutput.ReadToEnd();
       string err = process.StandardError.ReadToEnd().Trim();
-      if(process.ExitCode != 0) throw new AdbException(result, err, command);
+      if(process.ExitCode < 0) throw new AdbException(result, err, command, process.ExitCode);
       else if (!string.IsNullOrEmpty(err))
       {
         Console.WriteLine($"AdbCommand:" + command);
@@ -141,7 +140,7 @@ namespace TqkLibrary.Adb
 
       string result = process.StandardOutput.ReadToEnd();
       string err = process.StandardError.ReadToEnd().Trim();
-      if (process.ExitCode != 0) throw new AdbException(result, err, command);
+      if (process.ExitCode < 0) throw new AdbException(result, err, command, process.ExitCode);
       else if (!string.IsNullOrEmpty(err))
       {
         Console.WriteLine($"AdbCommand (cmd):" + command);
@@ -154,59 +153,77 @@ namespace TqkLibrary.Adb
     #endregion
 
     #region mainMethod
-    public void Stop() => TokenSource.Cancel();
+    public void Stop()
+    {
+      if (!TokenSource.IsCancellationRequested) TokenSource.Cancel();
+      else TokenSource2.Cancel();
+    }
 
     public void Delay(int value)
     {
       if(LogDelay) LogCommand?.Invoke($"Delay {value}ms");
-      Task.Delay(value, CancellationToken).Wait();
+      Task.Delay(value, Token).Wait();
+    }
+    public Task DelayAsync(int value)
+    {
+      if (LogDelay) LogCommand?.Invoke($"Delay {value}ms");
+      return Task.Delay(value, Token);
     }
 
     public void Delay(int min, int max) => Delay(rd.Next(min, max));
+    public Task DelayAsync(int min, int max) => DelayAsync(rd.Next(min, max));
 
-    public void Dispose() => TokenSource.Dispose();
 
-
-    public string AdbCommand(string command)
-      => AdbCommand(command, TimeoutDefault);
-
-    public string AdbCommand(string command, int timeout)
+    public void Dispose()
     {
-      CancellationToken.ThrowIfCancellationRequested();
-      if(IsLd)
+      TokenSource.Dispose();
+      TokenSource2.Dispose();
+    }
+
+
+    public string AdbCommand(string command, CancellationToken timeoutToken = default)
+    {
+      CancellationToken.ThrowIfCancellationRequested(); 
+      LogCommand?.Invoke("adb " + command);
+      if (IsLd)
       {
-        using CancellationTokenSource cancellationTokenSource = new CancellationTokenSource(timeout);
-        return LdPlayer.LdPlayer.AdbCommand(DeviceId, command, cancellationTokenSource.Token, this.CancellationToken);
+        return LdPlayer.LdPlayer.AdbCommand(DeviceId, command, timeoutToken, this.CancellationToken);
       }
       else
       {
         string adbLocation = string.IsNullOrEmpty(adbPath) ? AdbPath : adbPath;
-        LogCommand?.Invoke("adb " + command);
         string commands = string.IsNullOrEmpty(DeviceId) ? command : $"-s {DeviceId} {command}";
-        using CancellationTokenSource cancellationTokenSource = new CancellationTokenSource(timeout);
-        return ExecuteCommand(commands, cancellationTokenSource.Token, this.CancellationToken, adbLocation);
+        return ExecuteCommand(commands, timeoutToken, Token, adbLocation);
       }
     }
 
+    public string AdbCommand(string command, int timeout)
+    {
+      using CancellationTokenSource cancellationTokenSource = new CancellationTokenSource(timeout);
+      return AdbCommand(command, cancellationTokenSource.Token);
+    }
 
-    public string AdbCommandCmd(string command)
-      => AdbCommandCmd(command, TimeoutDefault);
 
-    public string AdbCommandCmd(string command, int timeout)
+    public string AdbCommandCmd(string command, CancellationToken timeoutToken = default)
     {
       CancellationToken.ThrowIfCancellationRequested();
       if (IsLd)
       {
-        throw new NotSupportedException(command);
+        throw new NotSupportedException("AdbCommandCmd in Ldplayer Mode");
       }
       else
       {
         string adbLocation = string.IsNullOrEmpty(adbPath) ? AdbPath : adbPath;
         string commands = string.IsNullOrEmpty(DeviceId) ? command : $"-s {DeviceId} {command}";
         LogCommand?.Invoke(commands);
-        using CancellationTokenSource cancellationTokenSource = new CancellationTokenSource(timeout);
-        return ExecuteCommandCmd(commands, cancellationTokenSource.Token, this.CancellationToken, adbLocation);
+        return ExecuteCommandCmd(commands, timeoutToken, Token, adbLocation);
       }
+    }
+
+    public string AdbCommandCmd(string command, int timeout)
+    {
+      using CancellationTokenSource cancellationTokenSource = new CancellationTokenSource(timeout);
+      return AdbCommandCmd(command, cancellationTokenSource.Token);
     }
 
     #endregion
@@ -217,6 +234,8 @@ namespace TqkLibrary.Adb
     public void UnRoot() => AdbCommand("unroot");
 
     public void WaitFor(WaitForType type, int timeout = 120000) => AdbCommand($"wait-for-{type.ToString().ToLower()}", timeout);
+    public Task WaitForAsync(WaitForType type, int timeout = 120000)
+      => Task.Run(() => AdbCommand($"wait-for-{type.ToString().ToLower()}", timeout));
 
     public void Shutdown() => AdbCommand("shell reboot -p");
 
@@ -326,7 +345,7 @@ namespace TqkLibrary.Adb
           point = new Point(x, y);
           return point.Value;
         }
-        throw new AdbException(result, "shell dumpsys display failed", "shell dumpsys display | Find \"mCurrentDisplayRect\"");
+        throw new AdbException(result, "shell dumpsys display failed", "shell dumpsys display | Find \"mCurrentDisplayRect\"", 0);
       }
       else return point.Value;
     }
@@ -380,6 +399,7 @@ namespace TqkLibrary.Adb
       string text_fix = text
         .Replace(" ", "%s")
         .Replace("&", "\\&")
+        .Replace("\"", "\\\"")
         .Replace("<", "\\<")
         .Replace(">", "\\>")
         .Replace("?", "\\?")

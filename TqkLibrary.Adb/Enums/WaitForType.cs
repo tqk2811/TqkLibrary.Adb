@@ -1,4 +1,4 @@
-﻿namespace TqkLibrary.Adb
+﻿namespace TqkLibrary.AdbDotNet
 {
   public enum WaitForType
   {

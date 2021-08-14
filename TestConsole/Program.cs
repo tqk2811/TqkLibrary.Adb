@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using TqkLibrary.Adb.LdPlayer;
+using TqkLibrary.AdbDotNet.LdPlayer;
 
 namespace TestConsole
 {
@@ -16,6 +16,7 @@ namespace TestConsole
       //var list2 = LdPlayer.List2().ToList();
 
       LdPlayer ldPlayer = new LdPlayer("tiktok 2aa");
+      var list = LdPlayer.List().ToList();
       ldPlayer.Adb.ScreenShot();
     }
   }

@@ -7,12 +7,8 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace TqkLibrary.Adb.LdPlayer
+namespace TqkLibrary.AdbDotNet.LdPlayer
 {
-  public class LdProp
-  {
-
-  }
   public class LdPlayer : IDisposable
   {
     internal static string _LdConsolePath = "ldconsole.exe";
@@ -21,12 +17,14 @@ namespace TqkLibrary.Adb.LdPlayer
       get { return _LdConsolePath; }
       set { if (File.Exists(value)) _LdConsolePath = value; else throw new FileNotFoundException(value); }
     }
-
+    public event LogCallback LogCommand;
 
     #region Static func
     internal static string AdbCommand(string name, string command, CancellationToken timeoutToken, CancellationToken cancelToken)
     {
-      return ExecuteCommand($"adb --name {name} --command \"{command.Replace("\"","\\\"")}\"", timeoutToken, cancelToken);
+      command = command
+        .Replace("\"", "\\\"");
+      return ExecuteCommand($"adb --name {name} --command \"{command}\"", timeoutToken, cancelToken);
     }
 
     static string ExecuteCommand(string command, int timeout, CancellationToken cancelToken, string ldConsolePath = null)
@@ -55,7 +53,7 @@ namespace TqkLibrary.Adb.LdPlayer
 
       string result = process.StandardOutput.ReadToEnd();
       string err = process.StandardError.ReadToEnd();
-      if (process.ExitCode != 0) throw new LdPlayerException(result, err, command);
+      if (process.ExitCode < 0) throw new LdPlayerException(result, err, command, process.ExitCode);
       else if (!string.IsNullOrEmpty(err))
       {
         Console.WriteLine($"LdConsole :" + command);
@@ -65,7 +63,16 @@ namespace TqkLibrary.Adb.LdPlayer
       }
       return result;
     }
-
+    string _ExecuteCommand(string command, CancellationToken timeoutToken)
+    {
+      LogCommand?.Invoke($"ldconsole {command}");
+      return ExecuteCommand(command, timeoutToken, Adb.Token);
+    }
+    string _ExecuteCommand(string command, int timeout)
+    {
+      LogCommand?.Invoke($"ldconsole {command}");
+      return ExecuteCommand(command,timeout, Adb.Token);
+    }
 
     public static void QuitAll(int timeout, CancellationToken cancelToken = default)
       => ExecuteCommand("quitall", timeout, cancelToken);
@@ -120,7 +127,7 @@ namespace TqkLibrary.Adb.LdPlayer
             Title = splits[1],
             TopWindowHandle = int.Parse(splits[2]),
             BindWindowHandle = int.Parse(splits[3]),
-            AndroidStarted = int.Parse(splits[4]),
+            AndroidStarted = int.Parse(splits[4]) == 1,
             ProcessId = int.Parse(splits[5]),
             ProcessIdOfVbox = int.Parse(splits[6])
           };
@@ -166,33 +173,56 @@ namespace TqkLibrary.Adb.LdPlayer
     }
 
 
-    public void Quit() => ExecuteCommand($"quit --name \"{Adb.DeviceId}\"", Adb.TimeoutDefault, Adb.CancellationToken);
-    public void Launch() => ExecuteCommand($"launch --name \"{Adb.DeviceId}\"", Adb.TimeoutDefault, Adb.CancellationToken);
-    public void Reboot() => ExecuteCommand($"reboot --name \"{Adb.DeviceId}\"", Adb.TimeoutDefault, Adb.CancellationToken);
-    public bool IsRunning() => ExecuteCommand($"isrunning --name \"{Adb.DeviceId}\"", Adb.TimeoutDefault, Adb.CancellationToken).Contains("running");
-    public void Remove() => ExecuteCommand($"remove --name \"{Adb.DeviceId}\"", Adb.TimeoutDefault, Adb.CancellationToken);
+    public void Quit() => _ExecuteCommand($"quit --name \"{Adb.DeviceId}\"", Adb.TimeoutDefault);
+    public void Launch() => _ExecuteCommand($"launch --name \"{Adb.DeviceId}\"", Adb.TimeoutDefault);
+    public void Reboot() => _ExecuteCommand($"reboot --name \"{Adb.DeviceId}\"", Adb.TimeoutDefault);
+    public bool IsRunning() => _ExecuteCommand($"isrunning --name \"{Adb.DeviceId}\"", Adb.TimeoutDefault).Contains("running");
+    public void Remove() => _ExecuteCommand($"remove --name \"{Adb.DeviceId}\"", Adb.TimeoutDefault);
+    public bool RemoveUntillRemoved(CancellationToken timeoutToken = default)
+    {
+      while (List2().Any(x => Adb.DeviceId.Equals(x.Title)))
+      {
+        if (timeoutToken.IsCancellationRequested) return false;
+        _ExecuteCommand($"remove --name \"{Adb.DeviceId}\"", Adb.TimeoutDefault);
+        Adb.Delay(500);
+      }
+      return true;
+    }
+
     public void Rename(string newName)
     {
-      ExecuteCommand($"rename --name \"{Adb.DeviceId}\" --title \"{newName}\"", Adb.TimeoutDefault, Adb.CancellationToken);
+      _ExecuteCommand($"rename --name \"{Adb.DeviceId}\" --title \"{newName}\"", Adb.TimeoutDefault);
       Adb.DeviceId = newName;
     }
 
+    public bool RenameUntilRenamed(string newName, CancellationToken timeoutToken = default)
+    {
+      while(List2().Any(x => Adb.DeviceId.Equals(x.Title)))
+      {
+        if (timeoutToken.IsCancellationRequested) return false;
+        _ExecuteCommand($"rename --name \"{Adb.DeviceId}\" --title \"{newName}\"", Adb.TimeoutDefault);
+        Adb.Delay(500);
+      }
+      Adb.DeviceId = newName;
+      return true;
+    }
+
     public void InstallAppFile(string fileName) 
-      => ExecuteCommand($"installapp --name \"{Adb.DeviceId}\" --filename {fileName}", Adb.TimeoutDefault, Adb.CancellationToken);
+      => _ExecuteCommand($"installapp --name \"{Adb.DeviceId}\" --filename {fileName}", Adb.TimeoutDefault);
     public void InstallAppPackage(string pakageName) 
-      => ExecuteCommand($"installapp --name \"{Adb.DeviceId}\" --packagename {pakageName}", Adb.TimeoutDefault, Adb.CancellationToken);
+      => _ExecuteCommand($"installapp --name \"{Adb.DeviceId}\" --packagename {pakageName}", Adb.TimeoutDefault);
     public void UninstallApp(string pakageName) 
-      => ExecuteCommand($"uninstallapp --name \"{Adb.DeviceId}\" --packagename {pakageName}", Adb.TimeoutDefault, Adb.CancellationToken);
+      => _ExecuteCommand($"uninstallapp --name \"{Adb.DeviceId}\" --packagename {pakageName}", Adb.TimeoutDefault);
     public void RunApp(string pakageName) 
-      => ExecuteCommand($"runapp --name \"{Adb.DeviceId}\" --packagename {pakageName}", Adb.TimeoutDefault, Adb.CancellationToken);
+      => _ExecuteCommand($"runapp --name \"{Adb.DeviceId}\" --packagename {pakageName}", Adb.TimeoutDefault);
     public void KillApp(string pakageName) 
-      => ExecuteCommand($"killapp --name \"{Adb.DeviceId}\" --packagename {pakageName}", Adb.TimeoutDefault, Adb.CancellationToken);
+      => _ExecuteCommand($"killapp --name \"{Adb.DeviceId}\" --packagename {pakageName}", Adb.TimeoutDefault);
     public void Locatte(double lng, double lat) 
-      => ExecuteCommand($"remove --name \"{Adb.DeviceId}\" --LLI {lng},{lat}", Adb.TimeoutDefault, Adb.CancellationToken);
+      => _ExecuteCommand($"remove --name \"{Adb.DeviceId}\" --LLI {lng},{lat}", Adb.TimeoutDefault);
     public void BackupApp(string pakageName, string pcPath) 
-      => ExecuteCommand($"backupapp --name \"{Adb.DeviceId}\" --packagename {pakageName} --file {pcPath}", Adb.TimeoutDefault, Adb.CancellationToken);
+      => _ExecuteCommand($"backupapp --name \"{Adb.DeviceId}\" --packagename {pakageName} --file {pcPath}", Adb.TimeoutDefault);
     public void RestoreApp(string pakageName, string pcPath) 
-      => ExecuteCommand($"restoreapp --name \"{Adb.DeviceId}\" --packagename {pakageName} --file {pcPath}", Adb.TimeoutDefault, Adb.CancellationToken);
+      => _ExecuteCommand($"restoreapp --name \"{Adb.DeviceId}\" --packagename {pakageName} --file {pcPath}", Adb.TimeoutDefault);
 
   }
 }

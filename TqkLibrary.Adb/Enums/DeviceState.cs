@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace TqkLibrary.Adb
+namespace TqkLibrary.AdbDotNet
 {
   [Flags]
   public enum DeviceState

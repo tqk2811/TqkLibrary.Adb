@@ -1,19 +1,21 @@
 ﻿using System;
 
-namespace TqkLibrary.Adb
+namespace TqkLibrary.AdbDotNet
 {
   public class AdbException : Exception
   {
-    public AdbException(string StandardOutput, string StandardError, string arguments) : base(StandardError)
+    public AdbException(string StandardOutput, string StandardError, string arguments, int exitCode) : base(StandardError)
     {
       this.StandardOutput = StandardOutput;
       this.StandardError = StandardError;
       this.Arguments = arguments;
+      this.ExitCode = exitCode;
     }
 
     public string StandardOutput { get; }
     public string StandardError { get; }
     public string Arguments { get; }
+    public int ExitCode { get; }
   }
 
   public class AdbTimeoutException : Exception
@@ -31,16 +33,18 @@ namespace TqkLibrary.Adb
 
   public class LdPlayerException : Exception
   {
-    public LdPlayerException(string StandardOutput, string StandardError, string arguments) : base(StandardError)
+    public LdPlayerException(string StandardOutput, string StandardError, string arguments, int exitCode) : base(StandardError)
     {
       this.StandardOutput = StandardOutput;
       this.StandardError = StandardError;
-      this.Arguments = arguments;
+      this.Arguments = arguments; 
+      this.ExitCode = exitCode;
     }
 
     public string StandardOutput { get; }
     public string StandardError { get; }
     public string Arguments { get; }
+    public int ExitCode { get; }
   }
 
   public class LdPlayerTimeoutException : Exception
