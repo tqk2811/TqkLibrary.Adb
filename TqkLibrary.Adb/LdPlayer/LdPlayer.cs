@@ -20,11 +20,11 @@ namespace TqkLibrary.AdbDotNet.LdPlayer
     public event LogCallback LogCommand;
 
     #region Static func
-    internal static string AdbCommand(string name, string command, CancellationToken timeoutToken, CancellationToken cancelToken)
+    public static string AdbCommand(string name, string command, CancellationToken timeoutToken = default, CancellationToken cancelToken = default)
     {
-      command = command
-        .Replace("\"", "\\\"");
-      return ExecuteCommand($"adb --name {name} --command \"{command}\"", timeoutToken, cancelToken);
+      //https://stackoverflow.com/a/16018942/5034139
+      command = command.WindowCharEscape();
+      return ExecuteCommand($"adb --name \"{name}\" --command \"{command}\"", timeoutToken, cancelToken);
     }
 
     static string ExecuteCommand(string command, int timeout, CancellationToken cancelToken, string ldConsolePath = null)
@@ -45,13 +45,17 @@ namespace TqkLibrary.AdbDotNet.LdPlayer
       process.StartInfo.RedirectStandardInput = true;
       process.Start();
 
+      string result = string.Empty;
       using (cancelToken.Register(() => process.Kill()))
-      using (timeoutToken.Register(() => process.Kill())) 
+      using (timeoutToken.Register(() => process.Kill()))
+      {
+        result = process.StandardOutput.ReadToEnd();
         process.WaitForExit();
+      }
       cancelToken.ThrowIfCancellationRequested();
       if (timeoutToken.IsCancellationRequested) throw new LdPlayerTimeoutException(command);
 
-      string result = process.StandardOutput.ReadToEnd();
+      //string result = process.StandardOutput.ReadToEnd();
       string err = process.StandardError.ReadToEnd();
       if (process.ExitCode < 0) throw new LdPlayerException(result, err, command, process.ExitCode);
       else if (!string.IsNullOrEmpty(err))
@@ -114,11 +118,9 @@ namespace TqkLibrary.AdbDotNet.LdPlayer
       string result = ExecuteCommand("list2", timeoutToken, cancelToken);
       return result
         .Split('\n')
-        .Select(x => x.Trim())
-        .Where(x => !string.IsNullOrWhiteSpace(x))
         .Select(x =>
       {
-        var splits = x.Split(',');
+        var splits = x.Trim().Split(',');
         if (splits.Length == 7)
         {
           return new LdList2()
@@ -139,9 +141,16 @@ namespace TqkLibrary.AdbDotNet.LdPlayer
 
 
     public static void Copy(string from, string newName, int timeout, CancellationToken cancelToken = default)
-     => ExecuteCommand($"copy --name {newName} --from {from}", timeout, cancelToken);
+     => ExecuteCommand($"copy --name \"{newName}\" --from \"{from}\"", timeout, cancelToken);
     public static void Copy(string from,string newName, CancellationToken timeoutToken = default, CancellationToken cancelToken = default) 
-      => ExecuteCommand($"copy --name {newName} --from {from}", timeoutToken, cancelToken);
+      => ExecuteCommand($"copy --name \"{newName}\" --from \"{from}\"", timeoutToken, cancelToken);
+
+    public static void Remove(string name, CancellationToken timeoutToken = default, CancellationToken cancelToken = default)
+      => ExecuteCommand($"remove --name \"{name}\"", timeoutToken, cancelToken);
+    public static void Quit(string name, CancellationToken timeoutToken = default, CancellationToken cancelToken = default)
+      => ExecuteCommand($"quit --name \"{name}\"", timeoutToken, cancelToken);
+    public static void Launch(string name, CancellationToken timeoutToken = default, CancellationToken cancelToken = default)
+      => ExecuteCommand($"launch --name \"{name}\"", timeoutToken, cancelToken);
 
 
     public static void SortWnd(int timeout, CancellationToken cancelToken = default)
@@ -220,9 +229,9 @@ namespace TqkLibrary.AdbDotNet.LdPlayer
     public void Locatte(double lng, double lat) 
       => _ExecuteCommand($"remove --name \"{Adb.DeviceId}\" --LLI {lng},{lat}", Adb.TimeoutDefault);
     public void BackupApp(string pakageName, string pcPath) 
-      => _ExecuteCommand($"backupapp --name \"{Adb.DeviceId}\" --packagename {pakageName} --file {pcPath}", Adb.TimeoutDefault);
+      => _ExecuteCommand($"backupapp --name \"{Adb.DeviceId}\" --packagename {pakageName} --file \"{pcPath}\"", Adb.TimeoutDefault);
     public void RestoreApp(string pakageName, string pcPath) 
-      => _ExecuteCommand($"restoreapp --name \"{Adb.DeviceId}\" --packagename {pakageName} --file {pcPath}", Adb.TimeoutDefault);
+      => _ExecuteCommand($"restoreapp --name \"{Adb.DeviceId}\" --packagename {pakageName} --file \"{pcPath}\"", Adb.TimeoutDefault);
 
   }
 }

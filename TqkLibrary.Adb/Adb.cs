@@ -92,13 +92,17 @@ namespace TqkLibrary.AdbDotNet
       process.StartInfo.RedirectStandardInput = true;
       process.Start();
 
+      string result = string.Empty;
       using (cancelToken.Register(() => process.Kill()))
-        using (timeoutToken.Register(() => process.Kill())) 
-          process.WaitForExit();
+        using (timeoutToken.Register(() => process.Kill()))
+      {
+        result = process.StandardOutput.ReadToEnd();
+        process.WaitForExit();
+      }
       cancelToken.ThrowIfCancellationRequested();
       if (timeoutToken.IsCancellationRequested) throw new AdbTimeoutException(command);
 
-      string result = process.StandardOutput.ReadToEnd();
+      //string result = process.StandardOutput.ReadToEnd();
       string err = process.StandardError.ReadToEnd().Trim();
       if(process.ExitCode < 0) throw new AdbException(result, err, command, process.ExitCode);
       else if (!string.IsNullOrEmpty(err))
@@ -108,6 +112,38 @@ namespace TqkLibrary.AdbDotNet
         Console.WriteLine($"\t\tStandardError:" + err);
       }
       return result;
+    }
+    public static MemoryStream ExecuteCommandBuffer(string command, CancellationToken timeoutToken = default, CancellationToken cancelToken = default, string adbPath = null)
+    {
+      using Process process = new Process();
+      process.StartInfo.FileName = string.IsNullOrEmpty(adbPath) ? AdbPath : adbPath;
+      process.StartInfo.WorkingDirectory = Directory.GetCurrentDirectory();
+      process.StartInfo.Arguments = command;
+      process.StartInfo.CreateNoWindow = true;
+      process.StartInfo.UseShellExecute = false;
+      process.StartInfo.RedirectStandardOutput = true;
+      process.StartInfo.RedirectStandardError = true;
+      process.StartInfo.RedirectStandardInput = true;
+      process.Start();
+      MemoryStream memoryStream = new MemoryStream();
+      using (cancelToken.Register(() => process.Kill()))
+      using (timeoutToken.Register(() => process.Kill()))
+      {
+        process.StandardOutput.BaseStream.CopyTo(memoryStream);
+        process.WaitForExit();
+      }
+      cancelToken.ThrowIfCancellationRequested();
+      if (timeoutToken.IsCancellationRequested) throw new AdbTimeoutException(command);
+
+      string err = process.StandardError.ReadToEnd().Trim();
+      if (process.ExitCode < 0) throw new AdbException(string.Empty, err, command, process.ExitCode);
+      else if (!string.IsNullOrEmpty(err))
+      {
+        Console.WriteLine($"AdbCommand:" + command);
+        Console.WriteLine($"\t\tStandardError:" + err);
+      }
+      memoryStream.Seek(0, SeekOrigin.Begin);
+      return memoryStream;
     }
 
     public static string ExecuteCommandCmd(string command, int timeout = 30000, CancellationToken cancelToken = default, string adbPath = null)
@@ -325,6 +361,16 @@ namespace TqkLibrary.AdbDotNet
       throw new FileNotFoundException(FilePath);
     }
 
+    public Bitmap ScreenShot2()
+    {
+      string args = string.Empty;
+      if (string.IsNullOrEmpty(DeviceId)) args = "exec-out screencap -p";
+      else args = $"-s {DeviceId} exec-out screencap -p";
+      var stream = ExecuteCommandBuffer(args);
+      return (Bitmap)Bitmap.FromStream(stream);
+    }
+
+
     Point? point = null;
     public Point GetScreenResolution(bool force = false)
     {
@@ -396,19 +442,7 @@ namespace TqkLibrary.AdbDotNet
 
     public void InputText(string text)
     {
-      string text_fix = text
-        .Replace(" ", "%s")
-        .Replace("&", "\\&")
-        .Replace("\"", "\\\"")
-        .Replace("<", "\\<")
-        .Replace(">", "\\>")
-        .Replace("?", "\\?")
-        .Replace(":", "\\:")
-        .Replace("{", "\\{")
-        .Replace("}", "\\}")
-        .Replace("[", "\\[")
-        .Replace("]", "\\]")
-        .Replace("|", "\\|");
+      string text_fix = text.AdbCharEscape();
       AdbCommand($"shell input text \"{text_fix}\"");
     }
 
