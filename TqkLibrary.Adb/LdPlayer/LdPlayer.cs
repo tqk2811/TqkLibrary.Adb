@@ -127,8 +127,8 @@ namespace TqkLibrary.AdbDotNet.LdPlayer
           {
             Index = int.Parse(splits[0]),
             Title = splits[1],
-            TopWindowHandle = int.Parse(splits[2]),
-            BindWindowHandle = int.Parse(splits[3]),
+            TopWindowHandle = new IntPtr(int.Parse(splits[2])),
+            BindWindowHandle = new IntPtr(int.Parse(splits[3])),
             AndroidStarted = int.Parse(splits[4]) == 1,
             ProcessId = int.Parse(splits[5]),
             ProcessIdOfVbox = int.Parse(splits[6])
