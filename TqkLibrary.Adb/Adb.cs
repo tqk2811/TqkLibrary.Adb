@@ -146,6 +146,21 @@ namespace TqkLibrary.AdbDotNet
       return memoryStream;
     }
 
+    public static Process ExecuteCommandProcess(string command, string adbPath = null)
+    {
+      Process process = new Process();
+      process.StartInfo.FileName = string.IsNullOrEmpty(adbPath) ? AdbPath : adbPath;
+      process.StartInfo.WorkingDirectory = Directory.GetCurrentDirectory();
+      process.StartInfo.Arguments = command;
+      process.StartInfo.CreateNoWindow = true;
+      process.StartInfo.UseShellExecute = false;
+      process.StartInfo.RedirectStandardOutput = true;
+      process.StartInfo.RedirectStandardError = true;
+      process.StartInfo.RedirectStandardInput = true;
+      process.Start();
+      return process;
+    }
+
     public static string ExecuteCommandCmd(string command, int timeout = 30000, CancellationToken cancelToken = default, string adbPath = null)
     {
       using CancellationTokenSource cancellationTokenSource = new CancellationTokenSource(timeout);
@@ -262,6 +277,21 @@ namespace TqkLibrary.AdbDotNet
       return AdbCommandCmd(command, cancellationTokenSource.Token);
     }
 
+    public Process ExecuteCommandProcess(string command)
+    {
+      CancellationToken.ThrowIfCancellationRequested();
+      if (IsLd)
+      {
+        throw new NotSupportedException("AdbCommandCmd in Ldplayer Mode");
+      }
+      else
+      {
+        string adbLocation = string.IsNullOrEmpty(adbPath) ? AdbPath : adbPath;
+        string commands = string.IsNullOrEmpty(DeviceId) ? command : $"-s {DeviceId} {command}";
+        LogCommand?.Invoke(commands);
+        return ExecuteCommandProcess(commands, adbLocation);
+      }
+    }
     #endregion
 
 
