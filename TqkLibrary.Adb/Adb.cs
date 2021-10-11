@@ -146,7 +146,7 @@ namespace TqkLibrary.AdbDotNet
       return memoryStream;
     }
 
-    public static Process ExecuteCommandProcess(string command, string adbPath = null)
+    public static Process ExecuteCommandProcess(string command, string adbPath)
     {
       Process process = new Process();
       process.StartInfo.FileName = string.IsNullOrEmpty(adbPath) ? AdbPath : adbPath;

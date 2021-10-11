@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>net462;net5.0-windows;net6.0-windows</TargetFrameworks>
+    <TargetFrameworks>net462;net5.0;net5.0-windows;net6.0;net6.0-windows</TargetFrameworks>
     <LangVersion Condition="!$(TargetFramework.StartsWith('net6'))">8.0</LangVersion>
     <LangVersion Condition="$(TargetFramework.StartsWith('net6'))">10.0</LangVersion>
     <Platforms>AnyCPU</Platforms>
@@ -9,10 +9,10 @@
     <AssemblyOriginatorKeyFile>Key.pfx</AssemblyOriginatorKeyFile>
   </PropertyGroup>
 
-  <ItemGroup>
-    <None Remove="LdPlayer\LdList2.cs~RFb9f9d33.TMP" />
+  <ItemGroup Condition="$(TargetFramework.StartsWith('net5')) Or $(TargetFramework.StartsWith('net6'))" >
+    <PackageReference Include="System.Drawing.Common" Version="5.0.2" />
   </ItemGroup>
-  <ItemGroup>
-    <PackageReference Condition="$(TargetFramework.StartsWith('net5')) Or $(TargetFramework.StartsWith('net6'))" Include="System.Drawing.Common" Version="5.0.2" />
+  <ItemGroup Condition="$(TargetFramework.StartsWith('net4'))">
+    <Reference Include="System.Drawing" />
   </ItemGroup>
 </Project>
