@@ -8,6 +8,7 @@
 		<authors>tqk2811</authors>
 		<projectUrl>https://github.com/tqk2811/TqkLibrary.Adb</projectUrl>
 		<repository type="git" url="https://github.com/tqk2811/TqkLibrary.Adb.git"/>
+		<license type="expression">MIT</license>
 		<dependencies>
 			<dependency id="System.Drawing.Common" version="6.0.0" />
 		</dependencies>
