@@ -27,12 +27,12 @@ namespace TqkLibrary.AdbDotNet.LdPlayer
             return ExecuteCommand($"adb --name \"{name}\" --command \"{command}\"", timeoutToken, cancelToken);
         }
 
-        static string ExecuteCommand(string command, int timeout, CancellationToken cancelToken, string ldConsolePath = null)
+        public static string ExecuteCommand(string command, int timeout, CancellationToken cancelToken, string ldConsolePath = null)
         {
             using CancellationTokenSource cancellationTokenSource = new CancellationTokenSource(timeout);
             return ExecuteCommand(command, cancellationTokenSource.Token, cancelToken, ldConsolePath);
         }
-        static string ExecuteCommand(string command, CancellationToken timeoutToken, CancellationToken cancelToken, string ldConsolePath = null)
+        public static string ExecuteCommand(string command, CancellationToken timeoutToken, CancellationToken cancelToken, string ldConsolePath = null)
         {
             using Process process = new Process();
             process.StartInfo.FileName = string.IsNullOrEmpty(ldConsolePath) ? _LdConsolePath : ldConsolePath;
