@@ -66,22 +66,24 @@ namespace TqkLibrary.AdbDotNet.LdPlayer
             int port1 = port0 + 1;
             string p0 = port0.ToString();
             string p1 = port1.ToString();
-            return Adb.Devices(DeviceState.Device).Where(x => x.EndsWith(p0.ToString()) || x.EndsWith(p1.ToString()));
+            return Adb.Devices()
+                .Where(x => x.DeviceState == DeviceState.Device && (x.DeviceId.EndsWith(p0.ToString()) || x.DeviceId.EndsWith(p1.ToString())))
+                .Select(x => x.DeviceId);
         }
 
         /// <summary>
         /// 
         /// </summary>
-        public void TryConnect()
+        public void TryConnect(bool force = false)
         {
             int port0 = 5554 + Index * 2;
             int port1 = port0 + 1;
 
-            if (PortInUse(port0).Count() > 0)
-                Adb.ExecuteCommand($"connect 127.0.0.1:{port0}");
+            if (force || PortInUse(port0).Count() > 0)
+                Adb.BuildAdbCommand($"connect 127.0.0.1:{port0}").Execute();
 
-            if (PortInUse(port1).Count() > 0)
-                Adb.ExecuteCommand($"connect 127.0.0.1:{port1}");
+            if (force || PortInUse(port1).Count() > 0)
+                Adb.BuildAdbCommand($"connect 127.0.0.1:{port1}").Execute();
 
         }
 

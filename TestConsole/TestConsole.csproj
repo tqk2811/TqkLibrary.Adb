@@ -67,11 +67,5 @@
     <None Include="App.config" />
     <None Include="packages.config" />
   </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\TqkLibrary.Adb\TqkLibrary.Adb.csproj">
-      <Project>{7920e534-f10f-4bd3-a867-9cf6a3edf452}</Project>
-      <Name>TqkLibrary.Adb</Name>
-    </ProjectReference>
-  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
