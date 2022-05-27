@@ -244,7 +244,7 @@ namespace TqkLibrary.AdbDotNet
         /// <param name="proxy"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public ProcessResult ClearProxy(string proxy, CancellationToken cancellationToken = default)
+        public ProcessResult ClearProxy(CancellationToken cancellationToken = default)
             => SetProxy(":0", cancellationToken);
         /// <summary>
         /// 
@@ -252,7 +252,7 @@ namespace TqkLibrary.AdbDotNet
         /// <param name="proxy"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public Task<ProcessResult> ClearProxyAsync(string proxy, CancellationToken cancellationToken = default)
+        public Task<ProcessResult> ClearProxyAsync(CancellationToken cancellationToken = default)
             => SetProxyAsync(":0", cancellationToken);
 
         /// <summary>
