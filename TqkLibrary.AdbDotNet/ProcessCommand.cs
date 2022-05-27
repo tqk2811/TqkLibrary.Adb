@@ -45,8 +45,14 @@ namespace TqkLibrary.AdbDotNet
             return process;
         }
 
-
-        internal async Task<ProcessResult> ExecuteAsync(CancellationToken cancellationToken = default, bool throwIfCancel = false)
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="cancellationToken"></param>
+        /// <param name="throwIfCancel"></param>
+        /// <returns></returns>
+        /// <exception cref="InvalidOperationException"></exception>
+        public async Task<ProcessResult> ExecuteAsync(CancellationToken cancellationToken = default, bool throwIfCancel = false)
         {
             ProcessResult processResult = new ProcessResult();
             using Process process = this.BuildProcess();
@@ -77,8 +83,14 @@ namespace TqkLibrary.AdbDotNet
             processResult.ExitCode = process.ExitCode;
             return processResult;
         }
-
-        internal ProcessResult Execute(CancellationToken cancellationToken = default, bool throwIfCancel = false)
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="cancellationToken"></param>
+        /// <param name="throwIfCancel"></param>
+        /// <returns></returns>
+        /// <exception cref="InvalidOperationException"></exception>
+        public ProcessResult Execute(CancellationToken cancellationToken = default, bool throwIfCancel = false)
         {
             ProcessResult processResult = new ProcessResult();
             using Process process = this.BuildProcess();

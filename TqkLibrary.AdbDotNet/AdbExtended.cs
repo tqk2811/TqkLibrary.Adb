@@ -187,8 +187,8 @@ namespace TqkLibrary.AdbDotNet
         /// <returns></returns>
         public static async Task PlanModeAsync(this Adb adb, bool isOn, CancellationToken cancellationToken = default)
         {
-            await adb.BuildAdbDeviceCommand($"settings put global airplane_mode_on {(isOn ? "1" : "0")}").ExecuteAsync(cancellationToken, true);
-            adb.BuildAdbDeviceCommand("am broadcast -a android.intent.action.AIRPLANE_MODE").ExecuteAsync(cancellationToken, true);
+            await adb.BuildAdbDeviceCommand($"settings put global airplane_mode_on {(isOn ? "1" : "0")}").ExecuteAsync(cancellationToken, true).ConfigureAwait(false);
+            await adb.BuildAdbDeviceCommand("am broadcast -a android.intent.action.AIRPLANE_MODE").ExecuteAsync(cancellationToken, true).ConfigureAwait(false);
         }
     }
 }

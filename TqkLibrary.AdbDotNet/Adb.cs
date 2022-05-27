@@ -8,6 +8,7 @@ using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using TqkLibrary.AdbDotNet.Classes;
+using TqkLibrary.AdbDotNet.LdPlayers;
 
 namespace TqkLibrary.AdbDotNet
 {
@@ -129,11 +130,6 @@ namespace TqkLibrary.AdbDotNet
 
 
 
-
-
-
-
-
         /// <summary>
         /// 
         /// </summary>
@@ -147,11 +143,15 @@ namespace TqkLibrary.AdbDotNet
         /// <summary>
         /// 
         /// </summary>
-        public bool IsLd { get; } = false;
-        internal Adb(string ldName, bool isLd) : this()
+        public LdPlayer LdPlayer { get; internal set; }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public bool IsLd { get { return LdPlayer != null; } }
+        internal Adb(LdPlayer ldPlayer) : this()
         {
-            IsLd = true;
-            DeviceId = ldName;
+            this.LdPlayer = ldPlayer ?? throw new ArgumentNullException(nameof(ldPlayer));
         }
 
         /// <summary>
@@ -175,7 +175,7 @@ namespace TqkLibrary.AdbDotNet
 
 
 
-
+        
         #region Device
 
         /// <summary>
@@ -188,12 +188,19 @@ namespace TqkLibrary.AdbDotNet
         public ProcessCommand BuildAdbDeviceCommand(string arguments)
         {
             if (string.IsNullOrWhiteSpace(arguments)) throw new ArgumentNullException(nameof(arguments));
-            if (!File.Exists(AdbPath)) throw new FileNotFoundException("can't find adb");
-            return new ProcessCommand()
+            if(IsLd)
             {
-                ExecuteFile = AdbPath,
-                Arguments = $"-s {DeviceId} {arguments.Trim()}",
-            };
+                return LdPlayer.BuildLdconsoleDeviceAdbCommand(arguments);                
+            }
+            else
+            {
+                if (!File.Exists(AdbPath)) throw new FileNotFoundException("can't find adb");
+                return new ProcessCommand()
+                {
+                    ExecuteFile = AdbPath,
+                    Arguments = $"-s {DeviceId} {arguments.Trim()}",
+                };
+            }
         }
 
         /// <summary>
