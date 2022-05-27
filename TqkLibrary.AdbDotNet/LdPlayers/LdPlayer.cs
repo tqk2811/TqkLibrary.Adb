@@ -138,7 +138,7 @@ namespace TqkLibrary.AdbDotNet.LdPlayers
         /// <param name="ldList2"></param>
         public LdPlayer(LdList2 ldList2)
         {
-            this.LdList2 = LdList2 ?? throw new ArgumentNullException(nameof(ldList2));
+            this.LdList2 = ldList2 ?? throw new ArgumentNullException(nameof(ldList2));
             this.Adb = new Adb(this);
         }
 
