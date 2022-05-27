@@ -37,6 +37,7 @@ namespace TqkLibrary.AdbDotNet
             {
                 CreateNoWindow = true,
                 UseShellExecute = false,
+                RedirectStandardOutput = true,
                 RedirectStandardError = true,
                 WorkingDirectory = WorkingDirectory
             };
