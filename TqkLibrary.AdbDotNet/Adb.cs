@@ -191,7 +191,7 @@ namespace TqkLibrary.AdbDotNet
             if (IsLd)
             {
                 var command = LdPlayer.BuildLdconsoleDeviceAdbCommand(arguments);
-                command.CommandLogEvent += (l) => LogCommand?.Invoke($"ldconsole adb {l}");
+                //command.CommandLogEvent += (l) => LogCommand?.Invoke($"ldconsole adb {l}");
                 return command;
             }
             else

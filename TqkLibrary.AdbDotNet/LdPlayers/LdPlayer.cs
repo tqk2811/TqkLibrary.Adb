@@ -169,6 +169,7 @@ namespace TqkLibrary.AdbDotNet.LdPlayers
                 ExecuteFile = LdConsolePath,
                 Arguments = $"{action} --index {LdList2.Index} {arguments}".Trim(),
             };
+            command.CommandLogEvent += (l) => LogCommand?.Invoke($"ldconsole {l}");
             return command;
         }
         /// <summary>
