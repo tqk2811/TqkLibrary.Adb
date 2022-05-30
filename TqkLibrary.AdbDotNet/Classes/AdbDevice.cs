@@ -34,7 +34,7 @@ namespace TqkLibrary.AdbDotNet.Classes
         {
             var parts = line.Split('\t');
             DeviceId = parts[0].Trim();
-            DeviceState = (DeviceState)Enum.Parse(typeof(DeviceState), parts[1].Trim());
+            DeviceState = (DeviceState)Enum.Parse(typeof(DeviceState), parts[1].Trim(), true);
         }
         /// <summary>
         /// 
