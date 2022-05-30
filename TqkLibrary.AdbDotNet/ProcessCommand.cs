@@ -69,7 +69,7 @@ namespace TqkLibrary.AdbDotNet
                 throw new InvalidOperationException("Failed to obtain the handle when starting a process. " +
                     "This could mean that the target executable doesn't exist or that execute permission is missing.");
             }
-            if (CommandLogEvent != null) ThreadPool.QueueUserWorkItem((o) => CommandLogEvent?.Invoke($"adb {Arguments}"));
+            if (CommandLogEvent != null) ThreadPool.QueueUserWorkItem((o) => CommandLogEvent?.Invoke(Arguments));
 
             using var register = cancellationToken.Register(() => { try { process.Kill(); } catch { } });
             using MemoryStream memoryStream = new MemoryStream();
@@ -100,7 +100,7 @@ namespace TqkLibrary.AdbDotNet
                 throw new InvalidOperationException("Failed to obtain the handle when starting a process. " +
                     "This could mean that the target executable doesn't exist or that execute permission is missing.");
             }
-            if (CommandLogEvent != null) ThreadPool.QueueUserWorkItem((o) => CommandLogEvent?.Invoke($"adb {Arguments}"));
+            if (CommandLogEvent != null) ThreadPool.QueueUserWorkItem((o) => CommandLogEvent?.Invoke(Arguments));
             using var register = cancellationToken.Register(() => { try { process.Kill(); } catch { } });
             using MemoryStream memoryStream = new MemoryStream();
             process.StandardOutput.BaseStream.CopyTo(memoryStream);

@@ -175,7 +175,7 @@ namespace TqkLibrary.AdbDotNet
 
 
 
-        
+
         #region Device
 
         /// <summary>
@@ -188,18 +188,22 @@ namespace TqkLibrary.AdbDotNet
         public ProcessCommand BuildAdbDeviceCommand(string arguments)
         {
             if (string.IsNullOrWhiteSpace(arguments)) throw new ArgumentNullException(nameof(arguments));
-            if(IsLd)
+            if (IsLd)
             {
-                return LdPlayer.BuildLdconsoleDeviceAdbCommand(arguments);                
+                var command = LdPlayer.BuildLdconsoleDeviceAdbCommand(arguments);
+                command.CommandLogEvent += (l) => LogCommand?.Invoke($"ldconsole adb {l}");
+                return command;
             }
             else
             {
                 if (!File.Exists(AdbPath)) throw new FileNotFoundException("can't find adb");
-                return new ProcessCommand()
+                var command = new ProcessCommand()
                 {
                     ExecuteFile = AdbPath,
                     Arguments = $"-s {DeviceId} {arguments.Trim()}",
                 };
+                command.CommandLogEvent += (l) => LogCommand?.Invoke($"adb {l}");
+                return command;
             }
         }
 
@@ -214,11 +218,13 @@ namespace TqkLibrary.AdbDotNet
         {
             if (string.IsNullOrWhiteSpace(arguments)) throw new ArgumentNullException(nameof(arguments));
             if (!File.Exists(AdbPath)) throw new FileNotFoundException("can't find adb");
-            return new ProcessCommand()
+            var command = new ProcessCommand()
             {
                 ExecuteFile = "cmd.exe",
                 Arguments = $"\"{AdbPath}\" -s {DeviceId} {arguments.Trim()}",
             };
+            command.CommandLogEvent += (l) => LogCommand?.Invoke($"adb {l}");
+            return command;
         }
 
         /// <summary>
