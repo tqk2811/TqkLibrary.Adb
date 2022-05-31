@@ -19,7 +19,7 @@ namespace TqkLibrary.AdbDotNet
         /// </summary>
         public int ExitCode { get; internal set; }
         internal byte[] _stdout;
-
+        internal byte[] _stderr;
         /// <summary>
         /// 
         /// </summary>
@@ -37,6 +37,24 @@ namespace TqkLibrary.AdbDotNet
         /// <returns></returns>
         public MemoryStream StdoutStream() => new MemoryStream(_stdout);
 
+        /// <summary>
+        /// 
+        /// </summary>
+        public string Stderr() => Encoding.UTF8.GetString(_stderr);
+        
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="encoding"></param>
+        /// <returns></returns>
+        public string Stderr(Encoding encoding) => encoding.GetString(_stderr);
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
+        public MemoryStream StderrStream() => new MemoryStream(_stderr);
+        
         /// <summary>
         /// 
         /// </summary>

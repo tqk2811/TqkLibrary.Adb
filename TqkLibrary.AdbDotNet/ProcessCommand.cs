@@ -72,15 +72,18 @@ namespace TqkLibrary.AdbDotNet
             if (CommandLogEvent != null) ThreadPool.QueueUserWorkItem((o) => CommandLogEvent?.Invoke(Arguments));
 
             using var register = cancellationToken.Register(() => { try { process.Kill(); } catch { } });
-            using MemoryStream memoryStream = new MemoryStream();
-            await process.StandardOutput.BaseStream.CopyToAsync(memoryStream);
+            using MemoryStream stdout_memoryStream = new MemoryStream();
+            using MemoryStream stderr_memoryStream = new MemoryStream();
+            await process.StandardOutput.BaseStream.CopyToAsync(stdout_memoryStream);
+            await process.StandardError.BaseStream.CopyToAsync(stderr_memoryStream);
 #if NET5_0_OR_GREATER
             await process.WaitForExitAsync();
 #else
             await tcs.Task.ConfigureAwait(false);
 #endif
             if (throwIfCancel) cancellationToken.ThrowIfCancellationRequested();
-            processResult._stdout = memoryStream.ToArray();
+            processResult._stdout = stdout_memoryStream.ToArray();
+            processResult._stderr = stderr_memoryStream.ToArray();
             processResult.ExitCode = process.ExitCode;
             return processResult;
         }
@@ -102,11 +105,14 @@ namespace TqkLibrary.AdbDotNet
             }
             if (CommandLogEvent != null) ThreadPool.QueueUserWorkItem((o) => CommandLogEvent?.Invoke(Arguments));
             using var register = cancellationToken.Register(() => { try { process.Kill(); } catch { } });
-            using MemoryStream memoryStream = new MemoryStream();
-            process.StandardOutput.BaseStream.CopyTo(memoryStream);
+            using MemoryStream stdout_memoryStream = new MemoryStream();
+            using MemoryStream stderr_memoryStream = new MemoryStream();
+            process.StandardOutput.BaseStream.CopyTo(stdout_memoryStream);
+            process.StandardError.BaseStream.CopyTo(stderr_memoryStream);
             process.WaitForExit();
             if (throwIfCancel) cancellationToken.ThrowIfCancellationRequested();
-            processResult._stdout = memoryStream.ToArray();
+            processResult._stdout = stdout_memoryStream.ToArray();
+            processResult._stderr = stderr_memoryStream.ToArray();
             processResult.ExitCode = process.ExitCode;
             return processResult;
         }
