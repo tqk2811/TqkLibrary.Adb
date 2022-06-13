@@ -34,7 +34,6 @@ namespace TqkLibrary.AdbDotNet.LdPlayers
         public static ProcessCommand BuildLdconsoleCommand(string action, string arguments = null)
         {
             if (string.IsNullOrWhiteSpace(action)) throw new ArgumentNullException(nameof(action));
-            if (!File.Exists(LdConsolePath)) throw new FileNotFoundException("can't find ldconsole.exe");
             return new ProcessCommand()
             {
                 ExecuteFile = LdConsolePath,
@@ -163,7 +162,6 @@ namespace TqkLibrary.AdbDotNet.LdPlayers
         public ProcessCommand BuildLdconsoleDeviceCommand(string action, string arguments = null)
         {
             if (string.IsNullOrWhiteSpace(action)) throw new ArgumentNullException(nameof(action));
-            if (!File.Exists(LdConsolePath)) throw new FileNotFoundException("can't find ldconsole.exe");
             var command = new ProcessCommand()
             {
                 ExecuteFile = LdConsolePath,

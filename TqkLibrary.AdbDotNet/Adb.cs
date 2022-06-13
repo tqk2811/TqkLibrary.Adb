@@ -47,29 +47,10 @@ namespace TqkLibrary.AdbDotNet
         public static ProcessCommand BuildAdbCommand(string arguments)
         {
             if (string.IsNullOrWhiteSpace(arguments)) throw new ArgumentNullException(nameof(arguments));
-            if (!File.Exists(AdbPath)) throw new FileNotFoundException("can't find adb");
             return new ProcessCommand()
             {
                 ExecuteFile = AdbPath,
                 Arguments = arguments,
-            };
-        }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="arguments"></param>
-        /// <returns></returns>
-        /// <exception cref="ArgumentNullException"></exception>
-        /// <exception cref="FileNotFoundException"></exception>
-        public static ProcessCommand BuildCmdAdbCommand(string arguments)
-        {
-            if (string.IsNullOrWhiteSpace(arguments)) throw new ArgumentNullException(nameof(arguments));
-            if (!File.Exists(AdbPath)) throw new FileNotFoundException("can't find adb");
-            return new ProcessCommand()
-            {
-                ExecuteFile = "cmd.exe",
-                Arguments = $"\"{AdbPath}\" {arguments}",
             };
         }
 
