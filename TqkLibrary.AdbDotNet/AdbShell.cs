@@ -35,18 +35,6 @@ namespace TqkLibrary.AdbDotNet
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="arguments"></param>
-        /// <returns></returns>
-        /// <exception cref="ArgumentNullException"></exception>
-        public ProcessCommand BuildCmdShellCommand(string arguments)
-        {
-            if (string.IsNullOrWhiteSpace(arguments)) throw new ArgumentNullException(nameof(arguments));
-            return adb.BuildCmdAdbDeviceCommand($"shell {arguments.Trim()}");
-        }
-
-        /// <summary>
-        /// 
-        /// </summary>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
         public ProcessResult Reboot(CancellationToken cancellationToken = default)

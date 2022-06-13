@@ -43,7 +43,6 @@ namespace TqkLibrary.AdbDotNet
         /// <param name="arguments"></param>
         /// <returns></returns>
         /// <exception cref="ArgumentNullException"></exception>
-        /// <exception cref="FileNotFoundException"></exception>
         public static ProcessCommand BuildAdbCommand(string arguments)
         {
             if (string.IsNullOrWhiteSpace(arguments)) throw new ArgumentNullException(nameof(arguments));
@@ -165,19 +164,16 @@ namespace TqkLibrary.AdbDotNet
         /// <param name="arguments"></param>
         /// <returns></returns>
         /// <exception cref="ArgumentNullException"></exception>
-        /// <exception cref="FileNotFoundException"></exception>
         public ProcessCommand BuildAdbDeviceCommand(string arguments)
         {
             if (string.IsNullOrWhiteSpace(arguments)) throw new ArgumentNullException(nameof(arguments));
             if (IsLd)
             {
                 var command = LdPlayer.BuildLdconsoleDeviceAdbCommand(arguments);
-                //command.CommandLogEvent += (l) => LogCommand?.Invoke($"ldconsole adb {l}");
                 return command;
             }
             else
             {
-                if (!File.Exists(AdbPath)) throw new FileNotFoundException("can't find adb");
                 var command = new ProcessCommand()
                 {
                     ExecuteFile = AdbPath,
@@ -186,26 +182,6 @@ namespace TqkLibrary.AdbDotNet
                 command.CommandLogEvent += (l) => LogCommand?.Invoke($"adb {l}");
                 return command;
             }
-        }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="arguments"></param>
-        /// <returns></returns>
-        /// <exception cref="ArgumentNullException"></exception>
-        /// <exception cref="FileNotFoundException"></exception>
-        public ProcessCommand BuildCmdAdbDeviceCommand(string arguments)
-        {
-            if (string.IsNullOrWhiteSpace(arguments)) throw new ArgumentNullException(nameof(arguments));
-            if (!File.Exists(AdbPath)) throw new FileNotFoundException("can't find adb");
-            var command = new ProcessCommand()
-            {
-                ExecuteFile = "cmd.exe",
-                Arguments = $"\"{AdbPath}\" -s {DeviceId} {arguments.Trim()}",
-            };
-            command.CommandLogEvent += (l) => LogCommand?.Invoke($"adb {l}");
-            return command;
         }
 
         /// <summary>

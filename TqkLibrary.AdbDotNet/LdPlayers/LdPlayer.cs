@@ -158,7 +158,6 @@ namespace TqkLibrary.AdbDotNet.LdPlayers
         /// <param name="arguments"></param>
         /// <returns></returns>
         /// <exception cref="ArgumentNullException"></exception>
-        /// <exception cref="FileNotFoundException"></exception>
         public ProcessCommand BuildLdconsoleDeviceCommand(string action, string arguments = null)
         {
             if (string.IsNullOrWhiteSpace(action)) throw new ArgumentNullException(nameof(action));
@@ -176,7 +175,6 @@ namespace TqkLibrary.AdbDotNet.LdPlayers
         /// <param name="adbArguments"></param>
         /// <returns></returns>
         /// <exception cref="ArgumentNullException"></exception>
-        /// <exception cref="FileNotFoundException"></exception>
         public ProcessCommand BuildLdconsoleDeviceAdbCommand(string adbArguments)
         {
             return BuildLdconsoleDeviceCommand("adb", $"--command \"{adbArguments.Trim().WindowCharEscape()}\"");
