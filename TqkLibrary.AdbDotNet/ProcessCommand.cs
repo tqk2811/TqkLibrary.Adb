@@ -74,8 +74,8 @@ namespace TqkLibrary.AdbDotNet
             using var register = cancellationToken.Register(() => { try { process.Kill(); } catch { } });
             using MemoryStream stdout_memoryStream = new MemoryStream();
             using MemoryStream stderr_memoryStream = new MemoryStream();
-            await process.StandardOutput.BaseStream.CopyToAsync(stdout_memoryStream);
-            await process.StandardError.BaseStream.CopyToAsync(stderr_memoryStream);
+            await process.StandardOutput.BaseStream.CopyToAsync(stdout_memoryStream).ConfigureAwait(false);
+            await process.StandardError.BaseStream.CopyToAsync(stderr_memoryStream).ConfigureAwait(false);
 #if NET5_0_OR_GREATER
             await process.WaitForExitAsync();
 #else
