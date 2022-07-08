@@ -56,31 +56,13 @@ namespace TqkLibrary.AdbDotNet
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="cancellationToken"></param>
-        /// <returns></returns>
-        public static Task<ProcessResult> KillServerAsync(CancellationToken cancellationToken = default)
-            => BuildAdbCommand("kill-server").ExecuteAsync(cancellationToken);
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="cancellationToken"></param>
-        public static ProcessResult KillServer(CancellationToken cancellationToken = default)
-           => BuildAdbCommand("kill-server").Execute(cancellationToken);
+        public static ProcessCommand KillServer() => BuildAdbCommand("kill-server");
 
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public static Task<ProcessResult> StartServerAsync(CancellationToken cancellationToken = default)
-            => BuildAdbCommand("start-server").ExecuteAsync(cancellationToken);
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="cancellationToken"></param>
-        /// <returns></returns>
-        public static ProcessResult StartServer(CancellationToken cancellationToken = default)
-            => BuildAdbCommand("start-server").Execute(cancellationToken);
+        public static ProcessCommand StartServer() => BuildAdbCommand("start-server");
 
         /// <summary>
         /// 
@@ -187,85 +169,34 @@ namespace TqkLibrary.AdbDotNet
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="cancellationToken"></param>
-        public ProcessResult Root(CancellationToken cancellationToken = default)
-           => BuildAdbDeviceCommand("root").Execute(cancellationToken, true);
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="cancellationToken"></param>
-        /// <returns></returns>
-        public Task<ProcessResult> RootAsync(CancellationToken cancellationToken = default)
-            => BuildAdbDeviceCommand("root").ExecuteAsync(cancellationToken, true);
+        public ProcessCommand Root() => BuildAdbDeviceCommand("root");
 
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="cancellationToken"></param>
-        public ProcessResult UnRoot(CancellationToken cancellationToken = default)
-           => BuildAdbDeviceCommand("unroot").Execute(cancellationToken, true);
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="cancellationToken"></param>
-        /// <returns></returns>
-        public Task<ProcessResult> UnRootAsync(CancellationToken cancellationToken = default)
-            => BuildAdbDeviceCommand("unroot").ExecuteAsync(cancellationToken, true);
+        public ProcessCommand UnRoot() => BuildAdbDeviceCommand("unroot");
 
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="type"></param>
-        /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public ProcessResult WaitFor(WaitForType type, CancellationToken cancellationToken = default)
-            => BuildAdbDeviceCommand($"wait-for-{type.ToString().ToLower()}").Execute(cancellationToken, true);
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="type"></param>
-        /// <param name="cancellationToken"></param>
-        /// <returns></returns>
-        public Task<ProcessResult> WaitForAsync(WaitForType type, CancellationToken cancellationToken = default)
-            => BuildAdbDeviceCommand($"wait-for-{type.ToString().ToLower()}").ExecuteAsync(cancellationToken, true);
+        public ProcessCommand WaitFor(WaitForType type) => BuildAdbDeviceCommand($"wait-for-{type.ToString().ToLower()}");
 
         /// <summary>
         /// 
         /// </summary>
         /// <param name="pcPath"></param>
         /// <param name="androidPath"></param>
-        /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public ProcessResult PushFile(string pcPath, string androidPath, CancellationToken cancellationToken = default)
-            => BuildAdbDeviceCommand($"push \"{pcPath}\" \"{androidPath}\"").Execute(cancellationToken, true);
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="pcPath"></param>
-        /// <param name="androidPath"></param>
-        /// <param name="cancellationToken"></param>
-        /// <returns></returns>
-        public Task<ProcessResult> PushFileAsync(string pcPath, string androidPath, CancellationToken cancellationToken = default)
-            => BuildAdbDeviceCommand($"push \"{pcPath}\" \"{androidPath}\"").ExecuteAsync(cancellationToken, true);
+        public ProcessCommand PushFile(string pcPath, string androidPath) => BuildAdbDeviceCommand($"push \"{pcPath}\" \"{androidPath}\"");
 
         /// <summary>
         /// 
         /// </summary>
         /// <param name="pcPath"></param>
         /// <param name="androidPath"></param>
-        /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public ProcessResult PullFile(string androidPath, string pcPath, CancellationToken cancellationToken = default)
-            => BuildAdbDeviceCommand($"pull \"{androidPath}\" \"{pcPath}\"").Execute(cancellationToken, true);
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="pcPath"></param>
-        /// <param name="androidPath"></param>
-        /// <param name="cancellationToken"></param>
-        /// <returns></returns>
-        public Task<ProcessResult> PullFileAsync(string androidPath, string pcPath, CancellationToken cancellationToken = default)
-            => BuildAdbDeviceCommand($"pull \"{androidPath}\" \"{pcPath}\"").ExecuteAsync(cancellationToken, true);
+        public ProcessCommand PullFile(string androidPath, string pcPath) => BuildAdbDeviceCommand($"pull \"{androidPath}\" \"{pcPath}\"");
 
         /// <summary>
         /// 
@@ -273,50 +204,21 @@ namespace TqkLibrary.AdbDotNet
         /// <param name="pcPath"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public ProcessResult InstallApk(string pcPath, CancellationToken cancellationToken = default)
-            => BuildAdbDeviceCommand($"install \"{pcPath}\"").Execute(cancellationToken, true);
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="pcPath"></param>
-        /// <param name="cancellationToken"></param>
-        public Task<ProcessResult> InstallApkAsync(string pcPath, CancellationToken cancellationToken = default)
-            => BuildAdbDeviceCommand($"install \"{pcPath}\"").ExecuteAsync(cancellationToken, true);
+        public ProcessCommand InstallApk(string pcPath) => BuildAdbDeviceCommand($"install \"{pcPath}\"");
 
         /// <summary>
         /// 
         /// </summary>
         /// <param name="pcPath"></param>
-        /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public ProcessResult UpdateApk(string pcPath, CancellationToken cancellationToken = default)
-            => BuildAdbDeviceCommand($"install -r \"{pcPath}\"").Execute(cancellationToken, true);
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="pcPath"></param>
-        /// <param name="cancellationToken"></param>
-        /// <returns></returns>
-        public Task<ProcessResult> UpdateApkAsync(string pcPath, CancellationToken cancellationToken = default)
-            => BuildAdbDeviceCommand($"install -r \"{pcPath}\"").ExecuteAsync(cancellationToken, true);
+        public ProcessCommand UpdateApk(string pcPath) => BuildAdbDeviceCommand($"install -r \"{pcPath}\"");
 
         /// <summary>
         /// 
         /// </summary>
         /// <param name="packageName"></param>
-        /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public ProcessResult UnInstallApk(string packageName, CancellationToken cancellationToken = default)
-            => BuildAdbDeviceCommand($"uninstall {packageName}").Execute(cancellationToken, true);
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="packageName"></param>
-        /// <param name="cancellationToken"></param>
-        /// <returns></returns>
-        public Task<ProcessResult> UnInstallApkAsync(string packageName, CancellationToken cancellationToken = default)
-            => BuildAdbDeviceCommand($"uninstall {packageName}").ExecuteAsync(cancellationToken, true);
-
+        public ProcessCommand UnInstallApk(string packageName) => BuildAdbDeviceCommand($"uninstall {packageName}");
 
         /// <summary>
         /// 

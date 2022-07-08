@@ -184,75 +184,25 @@ namespace TqkLibrary.AdbDotNet.LdPlayers
 
 
 #pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
-        public ProcessResult Quit(CancellationToken cancellationToken = default)
-            => BuildLdconsoleDeviceCommand("quit").Execute(cancellationToken, true);
-        public Task<ProcessResult> QuitAsync(CancellationToken cancellationToken = default)
-            => BuildLdconsoleDeviceCommand("quit").ExecuteAsync(cancellationToken, true);
-
-        public ProcessResult Launch(CancellationToken cancellationToken = default)
-            => BuildLdconsoleDeviceCommand("launch").Execute(cancellationToken, true);
-        public Task<ProcessResult> LaunchAsync(CancellationToken cancellationToken = default)
-            => BuildLdconsoleDeviceCommand("launch").ExecuteAsync(cancellationToken, true);
-
-        public ProcessResult Reboot(CancellationToken cancellationToken = default)
-            => BuildLdconsoleDeviceCommand("reboot").Execute(cancellationToken, true);
-        public Task<ProcessResult> RebootAsync(CancellationToken cancellationToken = default)
-            => BuildLdconsoleDeviceCommand("reboot").ExecuteAsync(cancellationToken, true);
-
+        public ProcessCommand Quit() => BuildLdconsoleDeviceCommand("quit");
+        public ProcessCommand Launch() => BuildLdconsoleDeviceCommand("launch");
+        public ProcessCommand Reboot() => BuildLdconsoleDeviceCommand("reboot");
+        public ProcessCommand IsRunningBuild() => BuildLdconsoleDeviceCommand("isrunning");
         public bool IsRunning(CancellationToken cancellationToken = default)
-            => BuildLdconsoleDeviceCommand("isrunning").Execute(cancellationToken, true).Stdout().Contains("running");
+            => IsRunningBuild().Execute(cancellationToken, true).Stdout().Contains("running");
         public Task<bool> IsRunningAsync(CancellationToken cancellationToken = default)
-            => BuildLdconsoleDeviceCommand("isrunning").ExecuteAsync(cancellationToken, true).StdoutAsync().ContinueWith(t => t.Result.Contains("running"));
+            => IsRunningBuild().ExecuteAsync(cancellationToken, true).StdoutAsync().ContinueWith(t => t.Result.Contains("running"));
+        public ProcessCommand Remove() => BuildLdconsoleDeviceCommand("remove");
+        public ProcessCommand Rename(string newName) => BuildLdconsoleDeviceCommand("rename", $"--title \"{newName}\"");
+        public ProcessCommand InstallAppFile(string fileName) => BuildLdconsoleDeviceCommand("installapp", $"--filename \"{fileName}\"");
+        public ProcessCommand InstallAppPackage(string pakageName) => BuildLdconsoleDeviceCommand("installapp", $"--packagename {pakageName}");
+        public ProcessCommand UninstallApp(string pakageName) => BuildLdconsoleDeviceCommand("uninstallapp", $"--packagename {pakageName}");
+        public ProcessCommand RunApp(string pakageName) => BuildLdconsoleDeviceCommand("runapp", $"--packagename {pakageName}");
 
-        public ProcessResult Remove(CancellationToken cancellationToken = default)
-            => BuildLdconsoleDeviceCommand("remove").Execute(cancellationToken, true);
-        public Task<ProcessResult> RemoveAsync(CancellationToken cancellationToken = default)
-            => BuildLdconsoleDeviceCommand("remove").ExecuteAsync(cancellationToken, true);
-
-        public ProcessResult Rename(string newName, CancellationToken cancellationToken = default)
-            => BuildLdconsoleDeviceCommand("rename", $"--title \"{newName}\"").Execute(cancellationToken, true);
-        public Task<ProcessResult> RenameAsync(string newName, CancellationToken cancellationToken = default)
-            => BuildLdconsoleDeviceCommand("rename", $"--title \"{newName}\"").ExecuteAsync(cancellationToken, true);
-
-        public ProcessResult InstallAppFile(string fileName, CancellationToken cancellationToken = default)
-            => BuildLdconsoleDeviceCommand("installapp", $"--filename \"{fileName}\"").Execute(cancellationToken, true);
-        public Task<ProcessResult> InstallAppFileAsync(string fileName, CancellationToken cancellationToken = default)
-            => BuildLdconsoleDeviceCommand("installapp", $"--filename \"{fileName}\"").ExecuteAsync(cancellationToken, true);
-
-        public ProcessResult InstallAppPackage(string pakageName, CancellationToken cancellationToken = default)
-            => BuildLdconsoleDeviceCommand("installapp", $"--packagename {pakageName}").Execute(cancellationToken, true);
-        public Task<ProcessResult> InstallAppPackageAsync(string fileName, CancellationToken cancellationToken = default)
-           => BuildLdconsoleDeviceCommand("installapp", $"--packagename \"{fileName}\"").ExecuteAsync(cancellationToken, true);
-
-        public ProcessResult UninstallApp(string pakageName, CancellationToken cancellationToken = default)
-            => BuildLdconsoleDeviceCommand("uninstallapp", $"--packagename {pakageName}").Execute(cancellationToken, true);
-        public Task<ProcessResult> UninstallAppAsync(string fileName, CancellationToken cancellationToken = default)
-           => BuildLdconsoleDeviceCommand("uninstallapp", $"--packagename \"{fileName}\"").ExecuteAsync(cancellationToken, true);
-
-        public ProcessResult RunApp(string pakageName, CancellationToken cancellationToken = default)
-            => BuildLdconsoleDeviceCommand("runapp", $"--packagename {pakageName}").Execute(cancellationToken, true);
-        public Task<ProcessResult> RunAppAsync(string fileName, CancellationToken cancellationToken = default)
-           => BuildLdconsoleDeviceCommand("runapp", $"--packagename \"{fileName}\"").ExecuteAsync(cancellationToken, true);
-
-        public ProcessResult KillApp(string pakageName, CancellationToken cancellationToken = default)
-            => BuildLdconsoleDeviceCommand("killapp", $"--packagename {pakageName}").Execute(cancellationToken, true);
-        public Task<ProcessResult> KillAppAsync(string fileName, CancellationToken cancellationToken = default)
-           => BuildLdconsoleDeviceCommand("killapp", $"--packagename \"{fileName}\"").ExecuteAsync(cancellationToken, true);
-
-        public ProcessResult Locatte(double lng, double lat, CancellationToken cancellationToken = default)
-            => BuildLdconsoleDeviceCommand("locate", $"--LLI {lng},{lat}").Execute(cancellationToken, true);
-        public Task<ProcessResult> LocatteAsync(double lng, double lat, CancellationToken cancellationToken = default)
-           => BuildLdconsoleDeviceCommand("locate", $"--LLI {lng},{lat}").ExecuteAsync(cancellationToken, true);
-
-        public ProcessResult BackupApp(string pakageName, string pcPath, CancellationToken cancellationToken = default)
-            => BuildLdconsoleDeviceCommand("backupapp", $"--packagename {pakageName} --file \"{pcPath}\"").Execute(cancellationToken, true);
-        public Task<ProcessResult> BackupAppAsync(string pakageName, string pcPath, CancellationToken cancellationToken = default)
-           => BuildLdconsoleDeviceCommand("backupapp", $"--packagename {pakageName} --file \"{pcPath}\"").ExecuteAsync(cancellationToken, true);
-
-        public ProcessResult RestoreApp(string pakageName, string pcPath, CancellationToken cancellationToken = default)
-            => BuildLdconsoleDeviceCommand("restoreapp", $"--packagename {pakageName} --file \"{pcPath}\"").Execute(cancellationToken, true);
-        public Task<ProcessResult> RestoreAppAsync(string pakageName, string pcPath, CancellationToken cancellationToken = default)
-           => BuildLdconsoleDeviceCommand("restoreapp", $"--packagename {pakageName} --file \"{pcPath}\"").ExecuteAsync(cancellationToken, true);
+        public ProcessCommand KillApp(string pakageName) => BuildLdconsoleDeviceCommand("killapp", $"--packagename {pakageName}");
+        public ProcessCommand Locatte(double lng, double lat) => BuildLdconsoleDeviceCommand("locate", $"--LLI {lng},{lat}");
+        public ProcessCommand BackupApp(string pakageName, string pcPath) => BuildLdconsoleDeviceCommand("backupapp", $"--packagename {pakageName} --file \"{pcPath}\"");
+        public ProcessCommand RestoreApp(string pakageName, string pcPath) => BuildLdconsoleDeviceCommand("restoreapp", $"--packagename {pakageName} --file \"{pcPath}\"");
 
 #pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
     }

@@ -46,7 +46,7 @@ namespace TqkLibrary.AdbDotNet
             {
                 if (!adb.Shell.BuildShellCommand($"screencap -p {androidPath}").Execute(cancellationToken, true).EnsureSucess())
                     return null;
-                if (!adb.PullFile(androidPath, pcPath, cancellationToken).EnsureSucess())
+                if (!adb.PullFile(androidPath, pcPath).Execute(cancellationToken, true).EnsureSucess())
                     return null;
             }
             finally
@@ -85,12 +85,12 @@ namespace TqkLibrary.AdbDotNet
             {
                 if (!await adb.Shell.BuildShellCommand($"screencap -p {androidPath}").ExecuteAsync(cancellationToken, true).EnsureSucessAsync())
                     return null;
-                if (!await adb.PullFileAsync(androidPath, pcPath, cancellationToken).EnsureSucessAsync())
+                if (!await adb.PullFile(androidPath, pcPath).ExecuteAsync(cancellationToken, true).EnsureSucessAsync())
                     return null;
             }
             finally
             {
-                _ = adb.Shell.DeleteFileAsync(androidPath);
+                _ = adb.Shell.DeleteFile(androidPath).ExecuteAsync();
             }
 
             if (File.Exists(pcPath))
@@ -100,7 +100,7 @@ namespace TqkLibrary.AdbDotNet
 #if NET5_0_OR_GREATER
                     byte[] buff = await File.ReadAllBytesAsync(pcPath, cancellationToken);
 #else
-                    byte[] buff = File.ReadAllBytes(pcPath);                    
+                    byte[] buff = File.ReadAllBytes(pcPath);
 #endif
                     MemoryStream memoryStream = new MemoryStream(buff);
                     return (Bitmap)Bitmap.FromStream(memoryStream);

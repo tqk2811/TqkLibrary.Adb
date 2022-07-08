@@ -14,6 +14,14 @@ namespace TqkLibrary.AdbDotNet
         /// <summary>
         /// 
         /// </summary>
+        public int? Timeout { get; set; }
+        /// <summary>
+        /// 
+        /// </summary>
+        public bool ThrowIfTimeout { get; set; } = false;
+        /// <summary>
+        /// 
+        /// </summary>
         public string Arguments { get; set; }
         /// <summary>
         /// 
@@ -49,6 +57,19 @@ namespace TqkLibrary.AdbDotNet
         /// <summary>
         /// 
         /// </summary>
+        /// <param name="timeout"></param>
+        /// <param name="throwifTimeout"></param>
+        /// <returns></returns>
+        public ProcessCommand WithTimeout(int? timeout, bool throwifTimeout)
+        {
+            this.Timeout = Timeout;
+            this.ThrowIfTimeout = throwifTimeout;
+            return this;
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
         /// <param name="cancellationToken"></param>
         /// <param name="throwIfCancel"></param>
         /// <returns></returns>
@@ -71,17 +92,29 @@ namespace TqkLibrary.AdbDotNet
             }
             if (CommandLogEvent != null) ThreadPool.QueueUserWorkItem((o) => CommandLogEvent?.Invoke(Arguments));
 
+            using CancellationTokenSource cancellationTokenSource_timeout = Timeout.HasValue ? new CancellationTokenSource(Timeout.Value) : new CancellationTokenSource();
+            using var register_timeout = cancellationTokenSource_timeout.Token.Register(() => { try { process.Kill(); } catch { } });
+
             using var register = cancellationToken.Register(() => { try { process.Kill(); } catch { } });
+
             using MemoryStream stdout_memoryStream = new MemoryStream();
             using MemoryStream stderr_memoryStream = new MemoryStream();
-            await process.StandardOutput.BaseStream.CopyToAsync(stdout_memoryStream).ConfigureAwait(false);
-            await process.StandardError.BaseStream.CopyToAsync(stderr_memoryStream).ConfigureAwait(false);
+            Task task_stdout = process.StandardOutput.BaseStream.CopyToAsync(stdout_memoryStream);//.ConfigureAwait(false);
+            Task task_stderr = process.StandardError.BaseStream.CopyToAsync(stderr_memoryStream);//.ConfigureAwait(false);
+
+            Task task_process =
 #if NET5_0_OR_GREATER
-            await process.WaitForExitAsync();
+            process.WaitForExitAsync();
 #else
-            await tcs.Task.ConfigureAwait(false);
+            tcs.Task;//.ConfigureAwait(false);
 #endif
+            await Task.WhenAll(task_stdout, task_stderr, task_process).ConfigureAwait(false);
             if (throwIfCancel) cancellationToken.ThrowIfCancellationRequested();
+            if (cancellationTokenSource_timeout.IsCancellationRequested)
+            {
+                if (CommandLogEvent != null) ThreadPool.QueueUserWorkItem((o) => CommandLogEvent?.Invoke($"Stuck {Arguments}"));
+                if (ThrowIfTimeout) throw new ProcessCommandTimeoutException();
+            }
             processResult._stdout = stdout_memoryStream.ToArray();
             processResult._stderr = stderr_memoryStream.ToArray();
             processResult.ExitCode = process.ExitCode;
@@ -115,6 +148,28 @@ namespace TqkLibrary.AdbDotNet
             processResult._stderr = stderr_memoryStream.ToArray();
             processResult.ExitCode = process.ExitCode;
             return processResult;
+        }
+    }
+
+    /// <summary>
+    /// 
+    /// </summary>
+    public class ProcessCommandTimeoutException : Exception
+    {
+        /// <summary>
+        /// 
+        /// </summary>
+        public ProcessCommandTimeoutException()
+        {
+
+        }
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="message"></param>
+        public ProcessCommandTimeoutException(string message) : base(message)
+        {
+
         }
     }
 }
