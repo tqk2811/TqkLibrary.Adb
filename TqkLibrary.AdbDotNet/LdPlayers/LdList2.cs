@@ -42,6 +42,20 @@ namespace TqkLibrary.AdbDotNet.LdPlayers
         /// <summary>
         /// 
         /// </summary>
+        public int Width { get; set; }
+        /// <summary>
+        /// 
+        /// </summary>
+        public int Height { get; set; }
+        /// <summary>
+        /// 
+        /// </summary>
+        public int DPI { get; set; }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
         /// <returns></returns>
         public override string ToString()
         {

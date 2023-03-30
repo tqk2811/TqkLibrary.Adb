@@ -62,27 +62,7 @@ namespace TqkLibrary.AdbDotNet.LdPlayers
             .ContinueWith(x => x.Result.Split('\n').Select(y => y.Trim()).Where(y => !string.IsNullOrWhiteSpace(y)));
 
         public static IEnumerable<LdList2> List2(CancellationToken cancellationToken = default)
-            => BuildLdconsoleCommand("list2").Execute(cancellationToken, true).Stdout()
-            .Split('\n')
-            .Select(x =>
-            {
-                var splits = x.Trim().Split(',');
-                if (splits.Length == 7)
-                {
-                    return new LdList2()
-                    {
-                        Index = int.Parse(splits[0]),
-                        Title = splits[1],
-                        TopWindowHandle = new IntPtr(int.Parse(splits[2])),
-                        BindWindowHandle = new IntPtr(int.Parse(splits[3])),
-                        AndroidStarted = int.Parse(splits[4]) == 1,
-                        ProcessId = int.Parse(splits[5]),
-                        ProcessIdOfVbox = int.Parse(splits[6])
-                    };
-                }
-                else return null;
-            })
-            .Where(x => x != null);
+            => List2Async(cancellationToken).ConfigureAwait(false).GetAwaiter().GetResult();
         public static Task<IEnumerable<LdList2>> List2Async(CancellationToken cancellationToken = default)
             => BuildLdconsoleCommand("list2").ExecuteAsync(cancellationToken, true).StdoutAsync()
             .ContinueWith(x => x.Result
@@ -90,9 +70,9 @@ namespace TqkLibrary.AdbDotNet.LdPlayers
                 .Select(x =>
                 {
                     var splits = x.Trim().Split(',');
-                    if (splits.Length == 7)
+                    if (splits.Length == 7 || splits.Length == 10)
                     {
-                        return new LdList2()
+                        LdList2 ldList2 = new LdList2()
                         {
                             Index = int.Parse(splits[0]),
                             Title = splits[1],
@@ -102,6 +82,13 @@ namespace TqkLibrary.AdbDotNet.LdPlayers
                             ProcessId = int.Parse(splits[5]),
                             ProcessIdOfVbox = int.Parse(splits[6])
                         };
+                        if(splits.Length == 10)
+                        {
+                            ldList2.Width = int.Parse(splits[7]);
+                            ldList2.Height = int.Parse(splits[8]);
+                            ldList2.DPI = int.Parse(splits[9]);
+                        }
+                        return ldList2;
                     }
                     else return null;
                 })
