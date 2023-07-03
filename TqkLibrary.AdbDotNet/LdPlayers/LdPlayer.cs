@@ -37,6 +37,7 @@ namespace TqkLibrary.AdbDotNet.LdPlayers
             return new ProcessCommand()
             {
                 ExecuteFile = LdConsolePath,
+                WorkingDirectory = new FileInfo(LdConsolePath).Directory.FullName,
                 Arguments = $"{action} {arguments}".Trim(),
             };
         }
@@ -151,6 +152,7 @@ namespace TqkLibrary.AdbDotNet.LdPlayers
             var command = new ProcessCommand()
             {
                 ExecuteFile = LdConsolePath,
+                WorkingDirectory = new FileInfo(LdConsolePath).Directory.FullName,
                 Arguments = $"{action} --index {LdList2.Index} {arguments}".Trim(),
             };
             command.CommandLogEvent += (l) => LogCommand?.Invoke($"ldconsole {l}");
