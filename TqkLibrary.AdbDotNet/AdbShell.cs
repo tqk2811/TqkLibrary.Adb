@@ -59,7 +59,6 @@ namespace TqkLibrary.AdbDotNet
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="cancellationToken"></param>
         /// <returns></returns>
         public ProcessCommand FastBoot() => BuildShellCommand("fastboot");
 

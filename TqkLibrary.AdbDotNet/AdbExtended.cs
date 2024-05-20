@@ -38,7 +38,7 @@ namespace TqkLibrary.AdbDotNet
         /// <param name="adb"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public static Bitmap ScreenShotPull(this Adb adb, CancellationToken cancellationToken = default)
+        public static Bitmap? ScreenShotPull(this Adb adb, CancellationToken cancellationToken = default)
         {
             string androidPath = $"/sdcard/{Guid.NewGuid()}.img_file";
             string pcPath = Path.Combine(Directory.GetCurrentDirectory(), $"{Guid.NewGuid()}.png");
@@ -77,7 +77,7 @@ namespace TqkLibrary.AdbDotNet
         /// <param name="adb"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public static async Task<Bitmap> ScreenShotPullAsync(this Adb adb, CancellationToken cancellationToken = default)
+        public static async Task<Bitmap?> ScreenShotPullAsync(this Adb adb, CancellationToken cancellationToken = default)
         {
             string androidPath = $"/sdcard/{Guid.NewGuid()}.screencap_file";
             string pcPath = Path.Combine(Directory.GetCurrentDirectory(), $"{Guid.NewGuid()}.png");

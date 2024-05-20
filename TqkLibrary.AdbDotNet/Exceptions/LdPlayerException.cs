@@ -5,7 +5,7 @@ namespace TqkLibrary.AdbDotNet
     /// <summary>
     /// 
     /// </summary>
-    public class AdbException : Exception
+    public class LdPlayerException : Exception
     {
         /// <summary>
         /// 
@@ -14,7 +14,7 @@ namespace TqkLibrary.AdbDotNet
         /// <param name="StandardError"></param>
         /// <param name="arguments"></param>
         /// <param name="exitCode"></param>
-        public AdbException(string StandardOutput, string StandardError, string arguments, int exitCode) : base(StandardError)
+        public LdPlayerException(string StandardOutput, string StandardError, string arguments, int exitCode) : base(StandardError)
         {
             this.StandardOutput = StandardOutput;
             this.StandardError = StandardError;

@@ -26,19 +26,17 @@ namespace TqkLibrary.AdbDotNet.LdPlayers
         /// <summary>
         /// 
         /// </summary>
-        public event LogCallback LogCommand;
+        public event LogCallback? LogCommand;
 
         #region Static func
 
 #pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
-        public static ProcessCommand BuildLdconsoleCommand(string action, string arguments = null)
+        public static ProcessCommand BuildLdconsoleCommand(string action, string? arguments = null)
         {
             if (string.IsNullOrWhiteSpace(action)) throw new ArgumentNullException(nameof(action));
-            return new ProcessCommand()
+            return new ProcessCommand(LdConsolePath, $"{action} {arguments}".Trim())
             {
-                ExecuteFile = LdConsolePath,
-                WorkingDirectory = new FileInfo(LdConsolePath).Directory.FullName,
-                Arguments = $"{action} {arguments}".Trim(),
+                WorkingDirectory = new FileInfo(LdConsolePath).Directory!.FullName,
             };
         }
 
@@ -83,7 +81,7 @@ namespace TqkLibrary.AdbDotNet.LdPlayers
                             ProcessId = int.Parse(splits[5]),
                             ProcessIdOfVbox = int.Parse(splits[6])
                         };
-                        if(splits.Length == 10)
+                        if (splits.Length == 10)
                         {
                             ldList2.Width = int.Parse(splits[7]);
                             ldList2.Height = int.Parse(splits[8]);
@@ -93,7 +91,7 @@ namespace TqkLibrary.AdbDotNet.LdPlayers
                     }
                     else return null;
                 })
-                .Where(x => x != null));
+                .Where(x => x != null))!;
 
         public static ProcessResult Copy(LdList2 from, string newName, CancellationToken cancellationToken = default)
             => BuildLdconsoleCommand("copy", $"--name \"{newName}\" --from {from.Index}").Execute(cancellationToken, true);
@@ -146,14 +144,12 @@ namespace TqkLibrary.AdbDotNet.LdPlayers
         /// <param name="arguments"></param>
         /// <returns></returns>
         /// <exception cref="ArgumentNullException"></exception>
-        public ProcessCommand BuildLdconsoleDeviceCommand(string action, string arguments = null)
+        public ProcessCommand BuildLdconsoleDeviceCommand(string action, string? arguments = null)
         {
             if (string.IsNullOrWhiteSpace(action)) throw new ArgumentNullException(nameof(action));
-            var command = new ProcessCommand()
+            var command = new ProcessCommand(LdConsolePath, $"{action} --index {LdList2.Index} {arguments}".Trim())
             {
-                ExecuteFile = LdConsolePath,
-                WorkingDirectory = new FileInfo(LdConsolePath).Directory.FullName,
-                Arguments = $"{action} --index {LdList2.Index} {arguments}".Trim(),
+                WorkingDirectory = new FileInfo(LdConsolePath).Directory!.FullName,
             };
             command.CommandLogEvent += (l) => LogCommand?.Invoke($"ldconsole {l}");
             return command;
@@ -196,9 +192,9 @@ namespace TqkLibrary.AdbDotNet.LdPlayers
 #pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
     }
 
-    /// <summary>
-    /// 
-    /// </summary>
+    ///// <summary>
+    ///// 
+    ///// </summary>
     //public class LdModify
     //{
     //    public int Width { get; set; }

@@ -45,12 +45,7 @@ namespace TqkLibrary.AdbDotNet
         /// <exception cref="ArgumentNullException"></exception>
         public static ProcessCommand BuildAdbCommand(string arguments)
         {
-            if (string.IsNullOrWhiteSpace(arguments)) throw new ArgumentNullException(nameof(arguments));
-            return new ProcessCommand()
-            {
-                ExecuteFile = AdbPath,
-                Arguments = arguments,
-            };
+            return new ProcessCommand(AdbPath, arguments);
         }
 
         /// <summary>
@@ -95,17 +90,17 @@ namespace TqkLibrary.AdbDotNet
         /// <summary>
         /// 
         /// </summary>
-        public string DeviceId { get; }
+        public string? DeviceId { get; }
 
         /// <summary>
         /// 
         /// </summary>
-        public event LogCallback LogCommand;
+        public event LogCallback? LogCommand;
 
         /// <summary>
         /// 
         /// </summary>
-        public LdPlayer LdPlayer { get; internal set; }
+        public LdPlayer? LdPlayer { get; internal set; }
 
         /// <summary>
         /// 
@@ -151,16 +146,12 @@ namespace TqkLibrary.AdbDotNet
             if (string.IsNullOrWhiteSpace(arguments)) throw new ArgumentNullException(nameof(arguments));
             if (IsLd)
             {
-                var command = LdPlayer.BuildLdconsoleDeviceAdbCommand(arguments);
+                var command = LdPlayer!.BuildLdconsoleDeviceAdbCommand(arguments);
                 return command;
             }
             else
             {
-                var command = new ProcessCommand()
-                {
-                    ExecuteFile = AdbPath,
-                    Arguments = $"-s {DeviceId} {arguments.Trim()}",
-                };
+                var command = new ProcessCommand(AdbPath, $"-s {DeviceId} {arguments.Trim()}");
                 command.CommandLogEvent += (l) => LogCommand?.Invoke($"adb {l}");
                 return command;
             }
@@ -202,7 +193,6 @@ namespace TqkLibrary.AdbDotNet
         /// 
         /// </summary>
         /// <param name="pcPath"></param>
-        /// <param name="cancellationToken"></param>
         /// <returns></returns>
         public ProcessCommand InstallApk(string pcPath) => BuildAdbDeviceCommand($"install \"{pcPath}\"");
 

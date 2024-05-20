@@ -3,6 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Net.NetworkInformation;
+using System.Threading;
+using System.Threading.Tasks;
+using TqkLibrary.AdbDotNet.Classes;
 
 namespace TqkLibrary.AdbDotNet.LdPlayers
 {
@@ -18,7 +21,7 @@ namespace TqkLibrary.AdbDotNet.LdPlayers
         /// <summary>
         /// 
         /// </summary>
-        public string Title { get; set; }
+        public string? Title { get; set; }
         /// <summary>
         /// 
         /// </summary>
@@ -57,7 +60,7 @@ namespace TqkLibrary.AdbDotNet.LdPlayers
         /// 
         /// </summary>
         /// <returns></returns>
-        public override string ToString()
+        public override string? ToString()
         {
             return Title;
 
@@ -73,32 +76,56 @@ namespace TqkLibrary.AdbDotNet.LdPlayers
         /// <summary>
         /// 
         /// </summary>
+        /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public IEnumerable<string> GetAdbDeviceId()
+        public async Task<IEnumerable<IAdbDevice>> GetAdbDeviceIdAsync(CancellationToken cancellationToken = default)
         {
             int port0 = 5554 + Index * 2;
             int port1 = port0 + 1;
             string p0 = port0.ToString();
             string p1 = port1.ToString();
-            return Adb.Devices()
-                .Where(x => x.DeviceState == DeviceState.Device && (x.DeviceId.EndsWith(p0.ToString()) || x.DeviceId.EndsWith(p1.ToString())))
-                .Select(x => x.DeviceId);
+            IEnumerable<IAdbDevice> devices = await Adb.DevicesAsync(cancellationToken);
+            return devices
+                .Where(x => x.DeviceState == DeviceState.Device && (x.DeviceId.EndsWith(p0.ToString()) || x.DeviceId.EndsWith(p1.ToString())));
         }
 
         /// <summary>
         /// 
         /// </summary>
-        public void TryConnect(bool force = false)
+        public async Task TryConnectAsync(int? timeout = null, CancellationToken cancellationToken = default)
         {
             int port0 = 5554 + Index * 2;
             int port1 = port0 + 1;
-
-            if (force || PortInUse(port0).Count() > 0)
-                Adb.BuildAdbCommand($"connect 127.0.0.1:{port0}").Execute();
-
-            if (force || PortInUse(port1).Count() > 0)
-                Adb.BuildAdbCommand($"connect 127.0.0.1:{port1}").Execute();
-
+            string? command = null;
+            if (PortInUse(port0).Count() > 0)
+                command = $"connect 127.0.0.1:{port0}";
+            else if (PortInUse(port1).Count() > 0)
+                command = $"connect 127.0.0.1:{port1}";
+            if (!string.IsNullOrWhiteSpace(command))
+            {
+                _ = await Adb.BuildAdbCommand(command!).WithTimeout(timeout, true).ExecuteAsync(cancellationToken);
+            }
+        }
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="obj"></param>
+        /// <returns></returns>
+        public override bool Equals(object? obj)
+        {
+            if (obj is LdList2 ldList2)
+            {
+                return ldList2.Index == Index;
+            }
+            return base.Equals(obj);
+        }
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
+        public override int GetHashCode()
+        {
+            return Index.GetHashCode();
         }
 
         static IEnumerable<IPEndPoint> PortInUse(params int[] ports)

@@ -11,16 +11,25 @@ namespace TqkLibrary.AdbDotNet.Classes
     /// </summary>
     public class AdbShellAMStart
     {
-        public string a { get; set; }
-        public string n { get; set; }
-        public string d { get; set; }
+        /// <summary>
+        /// 
+        /// </summary>
+        public string? A { get; set; }
+        /// <summary>
+        /// 
+        /// </summary>
+        public string? N { get; set; }
+        /// <summary>
+        /// 
+        /// </summary>
+        public string? D { get; set; }
 
         internal string GetCommand()
         {
             List<string> args = new List<string>();
-            if (!string.IsNullOrEmpty(a)) args.Add($"-a {a}");
-            if (!string.IsNullOrEmpty(n)) args.Add($"-n {n}");
-            if (!string.IsNullOrEmpty(d)) args.Add($"-d {d}");
+            if (!string.IsNullOrEmpty(A)) args.Add($"-a {A}");
+            if (!string.IsNullOrEmpty(N)) args.Add($"-n {N}");
+            if (!string.IsNullOrEmpty(D)) args.Add($"-d {D}");
             if (args.Count == 0) throw new ArgumentNullException("AdbShellAMStart");
             return string.Join(" ", args);
         }

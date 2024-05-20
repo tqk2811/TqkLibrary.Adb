@@ -17,9 +17,22 @@ namespace TqkLibrary.AdbDotNet
         /// <summary>
         /// 
         /// </summary>
-        public int ExitCode { get; internal set; }
-        internal byte[] _stdout;
-        internal byte[] _stderr;
+        /// <param name="exitCode"></param>
+        /// <param name="stdOut"></param>
+        /// <param name="stderr"></param>
+        /// <exception cref="ArgumentNullException"></exception>
+        public ProcessResult(int exitCode, byte[] stdOut, byte[] stderr)
+        {
+            this.ExitCode = exitCode;
+            this._stdout = stdOut ?? throw new ArgumentNullException(nameof(stdOut));
+            this._stderr = stderr ?? throw new ArgumentNullException(nameof(stderr));
+        }
+        /// <summary>
+        /// 
+        /// </summary>
+        public int ExitCode { get; }
+        readonly byte[] _stdout;
+        readonly byte[] _stderr;
         /// <summary>
         /// 
         /// </summary>
@@ -41,7 +54,7 @@ namespace TqkLibrary.AdbDotNet
         /// 
         /// </summary>
         public string Stderr() => Encoding.UTF8.GetString(_stderr);
-        
+
         /// <summary>
         /// 
         /// </summary>
@@ -54,7 +67,7 @@ namespace TqkLibrary.AdbDotNet
         /// </summary>
         /// <returns></returns>
         public MemoryStream StderrStream() => new MemoryStream(_stderr);
-        
+
         /// <summary>
         /// 
         /// </summary>
@@ -76,7 +89,7 @@ namespace TqkLibrary.AdbDotNet
             ProcessResult result = await adbResult.ConfigureAwait(false);
             return result.Stdout();
         }
-        
+
         /// <summary>
         /// 
         /// </summary>

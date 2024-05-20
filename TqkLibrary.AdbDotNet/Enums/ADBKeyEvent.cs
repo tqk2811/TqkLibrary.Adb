@@ -1,7 +1,8 @@
 ﻿namespace TqkLibrary.AdbDotNet
 {
-  public enum ADBKeyEvent : int
-  {
+#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
+    public enum ADBKeyEvent : int
+    {
     KEYCODE_0 = 0,
     KEYCODE_SOFT_LEFT,
     KEYCODE_SOFT_RIGHT,
@@ -88,4 +89,5 @@
     KEYCODE_NOTIFICATION,
     KEYCODE_APP_SWITCH = 187
   }
+#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
 }
