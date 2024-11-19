@@ -51,7 +51,7 @@ namespace TqkLibrary.AdbDotNet
             }
             finally
             {
-                adb.Shell.DeleteFile(androidPath);
+                _ = adb.Shell.DeleteFile(androidPath).ExecuteAsync();
             }
 
             if (File.Exists(pcPath))
