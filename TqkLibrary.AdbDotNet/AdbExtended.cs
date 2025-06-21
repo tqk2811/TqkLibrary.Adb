@@ -121,7 +121,7 @@ namespace TqkLibrary.AdbDotNet
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
         /// <exception cref="AdbException"></exception>
-        public static Point GetScreenResolution(this Adb adb, CancellationToken cancellationToken = default)
+        public static Size GetScreenResolution(this Adb adb, CancellationToken cancellationToken = default)
         {
             Regex regex = new Regex("(?<=mCurrentDisplayRect=Rect\\().*?(?=\\))", RegexOptions.Multiline);
             string result = adb.Shell.BuildShellCommand("dumpsys display | Find \"mCurrentDisplayRect\"").Execute(cancellationToken, true).Stdout();//
@@ -135,8 +135,8 @@ namespace TqkLibrary.AdbDotNet
 
                 int x = Convert.ToInt32(temp[0].Trim());
                 int y = Convert.ToInt32(temp[1].Trim());
-                Point point = new Point(x, y);
-                return point;
+                Size size = new Size(x, y);
+                return size;
             }
             throw new AdbException(result, "shell dumpsys display failed", "shell dumpsys display | Find \"mCurrentDisplayRect\"", 0);
         }
@@ -147,7 +147,7 @@ namespace TqkLibrary.AdbDotNet
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
         /// <exception cref="AdbException"></exception>
-        public static async Task<Point> GetScreenResolutionAsync(this Adb adb, CancellationToken cancellationToken = default)
+        public static async Task<Size> GetScreenResolutionAsync(this Adb adb, CancellationToken cancellationToken = default)
         {
             Regex regex = new Regex("(?<=mCurrentDisplayRect=Rect\\().*?(?=\\))", RegexOptions.Multiline);
             string result = await adb.Shell.BuildShellCommand("dumpsys display | Find \"mCurrentDisplayRect\"").ExecuteAsync(cancellationToken, true).StdoutAsync();//
@@ -161,8 +161,8 @@ namespace TqkLibrary.AdbDotNet
 
                 int x = Convert.ToInt32(temp[0].Trim());
                 int y = Convert.ToInt32(temp[1].Trim());
-                Point point = new Point(x, y);
-                return point;
+                Size size = new Size(x, y);
+                return size;
             }
             throw new AdbException(result, "shell dumpsys display failed", "shell dumpsys display | Find \"mCurrentDisplayRect\"", 0);
         }
