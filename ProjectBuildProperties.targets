@@ -1,4 +1,10 @@
 <Project>
+	<!-- Emit XML doc (IntelliSense) for every packable project; CS1591 = missing doc comment. -->
+	<PropertyGroup>
+		<GenerateDocumentationFile>true</GenerateDocumentationFile>
+		<NoWarn>$(NoWarn);CS1591</NoWarn>
+	</PropertyGroup>
+
 	<!--
 		GitVersion wiring for NuGet packaging.
 
@@ -19,6 +25,9 @@
 	<PropertyGroup Condition="'$(Configuration)' == 'Release'">
 		<Deterministic>true</Deterministic>
 		<ContinuousIntegrationBuild>true</ContinuousIntegrationBuild>
+		<!-- Embed all source files into the portable PDB so step-into works offline;
+		     Deterministic + ContinuousIntegrationBuild normalize source paths in the PDB. -->
+		<EmbedAllSources>true</EmbedAllSources>
 	</PropertyGroup>
 
 	<PropertyGroup Condition="Exists('$(MSBuildProjectDirectory)\$(MSBuildProjectName).nuspec')">
