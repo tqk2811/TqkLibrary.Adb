@@ -1,0 +1,106 @@
+name: Release
+
+# Push a tag vM.N.P (on a commit of master) -> test, pack M.N.P, GitHub Release with git-cliff notes,
+# push nuget.org with NuGet Trusted Publishing (OIDC, no API key secret).
+#   git tag v1.2.0 && git push origin v1.2.0
+
+on:
+  push:
+    tags:
+      - 'v[0-9]+.[0-9]+.[0-9]+'
+  workflow_dispatch:          # rerun a release: pick the TAG as ref, not a branch
+
+permissions:
+  contents: write
+  id-token: write             # NuGet/login exchanges the OIDC token for a short-lived API key
+
+jobs:
+  test:
+    if: github.ref_type == 'tag'
+    uses: ./.github/workflows/test.yml
+
+  release:
+    needs: test
+    if: github.ref_type == 'tag'
+    runs-on: windows-latest
+    env:
+      GH_TOKEN: ${{ github.token }}
+      TAG: ${{ github.ref_name }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0      # GitVersion and release notes need history + tags
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: |
+            8.0.x
+
+      - name: Check tag is on master
+        shell: pwsh
+        run: |
+          git fetch origin master
+          git merge-base --is-ancestor $env:GITHUB_SHA origin/master
+          if ($LASTEXITCODE -ne 0) { Write-Error "Tag $env:TAG is not on master"; exit 1 }
+          # GitVersion fails on a detached HEAD ("No base versions determined"), even on a tagged commit.
+          # Put a local 'master' on the tagged commit so the master branch config applies.
+          git checkout -B master $env:GITHUB_SHA
+          if ($LASTEXITCODE -ne 0) { exit 1 }
+
+      - name: Pack
+        shell: pwsh
+        run: |
+          $expected = $env:TAG.TrimStart('v')
+          New-Item -ItemType Directory -Force artifacts | Out-Null
+          # One package per csproj that has a sibling <name>.nuspec.
+          $specs = @(Get-ChildItem -Recurse -Filter *.nuspec | Where-Object { $_.FullName -notmatch '[\/](obj|bin)[\/]' })
+          if ($specs.Count -eq 0) { Write-Error "No nuspec found"; exit 1 }
+          foreach ($s in $specs) {
+            dotnet pack (Join-Path $s.DirectoryName "$($s.BaseName).csproj") -c Release -o artifacts
+            if ($LASTEXITCODE -ne 0) { exit 1 }
+            $name = "$($s.BaseName).$expected.nupkg"
+            if (-not (Test-Path (Join-Path artifacts $name))) {
+              Write-Error "Expected $name was not produced (version does not match tag $env:TAG)"; exit 1
+            }
+          }
+
+      - name: Release notes
+        shell: pwsh
+        run: |
+          $prev = git describe --tags --abbrev=0 --match "v[0-9]*.[0-9]*.[0-9]*" "$env:TAG^"
+          # First release has no previous tag: no range = whole history up to HEAD (the tagged commit).
+          # A bare tag is not a valid git-cliff range ("unable to parse OID").
+          $range = if ($LASTEXITCODE -eq 0 -and $prev) { @("$prev..$env:TAG") } else { @() }
+          npx -y git-cliff@2 --config cliff.toml --tag $env:TAG @range -o RELEASE_NOTES.md
+          if ($LASTEXITCODE -ne 0) { exit 1 }
+
+      - name: GitHub Release
+        shell: pwsh
+        run: |
+          gh release view $env:TAG *> $null
+          if ($LASTEXITCODE -eq 0) {
+            gh release edit $env:TAG --notes-file RELEASE_NOTES.md
+          } else {
+            gh release create $env:TAG --title $env:TAG --notes-file RELEASE_NOTES.md --verify-tag
+          }
+          if ($LASTEXITCODE -ne 0) { exit 1 }
+          gh release upload $env:TAG (Get-ChildItem artifacts -Filter *.nupkg).FullName --clobber
+          if ($LASTEXITCODE -ne 0) { exit 1 }
+
+      # NuGet Trusted Publishing: needs a trusted publishing policy on nuget.org (owner tqk2811,
+      # repo TqkLibrary.Adb, workflow release.yml). 'user' is the nuget.org profile name, not an email.
+      - name: NuGet login (OIDC)
+        id: nuget-login
+        uses: NuGet/login@v1
+        with:
+          user: tqk2811
+
+      - name: Push nuget.org
+        shell: pwsh
+        env:
+          NUGET_API_KEY: ${{ steps.nuget-login.outputs.NUGET_API_KEY }}
+        run: |
+          foreach ($p in Get-ChildItem artifacts -Filter *.nupkg) {
+            dotnet nuget push $p.FullName --api-key $env:NUGET_API_KEY --source https://api.nuget.org/v3/index.json --skip-duplicate
+            if ($LASTEXITCODE -ne 0) { Write-Error "Push failed: $($p.Name)"; exit 1 }
+          }

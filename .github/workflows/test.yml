@@ -1,0 +1,26 @@
+name: Test
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+  workflow_call:
+
+jobs:
+  test:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          submodules: false
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: |
+            8.0.x
+
+      # No test project in this repo (TestConsole is a manual console app, needs a device): build only.
+      # Tests do not need a real version: skip GitVersion (it fails on branches without a full SemVer tag).
+      - name: Build
+        run: dotnet build TqkLibrary.AdbDotNet/TqkLibrary.AdbDotNet.csproj -c Release -p:DisableGitVersionTask=true -p:Version=0.0.0

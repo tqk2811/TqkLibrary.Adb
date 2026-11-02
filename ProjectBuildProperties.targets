@@ -8,10 +8,10 @@
 	<!--
 		GitVersion wiring for NuGet packaging.
 
-		Version scheme (tag vMAJOR.MINOR.0, e.g. v1.0.0):
-		  Version / PackageVersion = Major.Minor.<commits since tag>     (NuGet version)
+		Version scheme (tag vM.N.P, e.g. v1.2.0; the tagged commit builds exactly M.N.P):
+		  Version / PackageVersion = M.N.P on the tagged commit, M.N.P-dev.<commits since tag> after it
 		  AssemblyVersion          = Major.Minor.0.0
-		  FileVersion              = Major.Minor.<commits since tag>.0
+		  FileVersion              = M.N.P.0
 
 		- Only projects with a sibling <ProjectName>.nuspec get GitVersion wired
 		  (test/demo projects without a nuspec skip the whole chain).
@@ -54,10 +54,11 @@
 
 	<Target Name="SetVersionFromGitVersion" AfterTargets="GetVersion" Condition="'$(EnableGitVersion)' == 'true' and '$(DisableGitVersionTask)' != 'true'">
 		<PropertyGroup>
-			<Version>$(GitVersion_Major).$(GitVersion_Minor).$(GitVersion_CommitsSinceVersionSource)</Version>
+			<Version>$(GitVersion_MajorMinorPatch)</Version>
+			<Version Condition="'$(GitVersion_CommitsSinceVersionSource)' != '0'">$(GitVersion_MajorMinorPatch)-dev.$(GitVersion_CommitsSinceVersionSource)</Version>
 			<PackageVersion>$(Version)</PackageVersion>
 			<AssemblyVersion>$(GitVersion_Major).$(GitVersion_Minor).0.0</AssemblyVersion>
-			<FileVersion>$(GitVersion_Major).$(GitVersion_Minor).$(GitVersion_CommitsSinceVersionSource).0</FileVersion>
+			<FileVersion>$(GitVersion_MajorMinorPatch).0</FileVersion>
 			<InformationalVersion>$(Version)</InformationalVersion>
 			<NuspecProperties>id=$(MSBuildProjectName);version=$(Version)</NuspecProperties>
 		</PropertyGroup>
